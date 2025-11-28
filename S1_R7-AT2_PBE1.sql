@@ -71,3 +71,29 @@ CREATE TABLE IF NOT EXISTS valores_finais_entrega (
     FOREIGN KEY (fk_id_entrega) REFERENCES entregas (id_entrega) 
 );
 
+DELIMITER $$
+	CREATE PROCEDURE cadastrar_endereco(IN pEstado VARCHAR(45), IN pBairro VARCHAR(45), IN pLogradouro VARCHAR(45), IN pNumero INT, IN pCep CHAR(9), IN pIdCliente INT)
+	BEGIN
+		INSERT INTO enderecos (estado, cidade, bairro, logradouro, numero, cep, fk_id_cliente) VALUES 
+        (pEstado, pBairro, pLogradouro, pNumero, pCep, pIdCliente);
+	END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE PROCEDURE cadastrar_telefone(IN pId_Cliente INT,
+    pTelefone VARCHAR(12))
+    BEGIN
+		INSERT INTO telefones (fk_id_cliente, telefone) 
+		VALUES (pId_Cliente, pTelefone);
+    END
+DELIMITER ;
+
+DELIMITER $$
+	CREATE PROCEDURE cadastrar_novo_cliente(IN pNomeCliente VARCHAR(100),
+    IN pCpfCliente CHAR(11),
+    IN pEmailCliente VARCHAR(100))
+	BEGIN 
+		INSERT INTO clientes (nome_cliente, cpf_cliente, email_cliente)
+		VALUES (pNomeCliente, pCpfCliente, pEmailCliente);
+	END $$
+DELIMITER ;
