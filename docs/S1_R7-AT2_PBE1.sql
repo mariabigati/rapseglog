@@ -5,7 +5,9 @@ CREATE TABLE IF NOT EXISTS clientes (
 	id_cliente INT PRIMARY KEY AUTO_INCREMENT  NOT NULL,
     nome_cliente VARCHAR(100) NOT NULL,
     cpf_cliente CHAR(11) UNIQUE NOT NULL,
-    email_cliente VARCHAR(100) UNIQUE NOT NULL
+    email_cliente VARCHAR(100) UNIQUE NOT NULL,
+    data_nasc DATE NOT NULL,
+    idade INT
 );
 
 CREATE TABLE IF NOT EXISTS tipo_entregas(
@@ -89,11 +91,10 @@ DELIMITER $$
 DELIMITER ;
 
 DELIMITER $$
-	CREATE PROCEDURE cadastrar_novo_cliente(IN pNomeCliente VARCHAR(100),
-    IN pCpfCliente CHAR(11),
-    IN pEmailCliente VARCHAR(100))
-	BEGIN 
-		INSERT INTO clientes (nome_cliente, cpf_cliente, email_cliente)
-		VALUES (pNomeCliente, pCpfCliente, pEmailCliente);
-	END $$
+	CREATE PROCEDURE cadastrar_novo_cliente(IN pNomeCliente VARCHAR(100), IN pCpfCliente CHAR(11), IN pEmailCliente VARCHAR(100), IN pDataNasc DATE)
+	BEGIN
+		INSERT INTO clientes (nome_cliente, cpf_cliente, email_cliente, data_nasc, idade)
+		VALUES (pNomeCliente, pCpfCliente, pEmailCliente, pDataNasc, TIMESTAMPDIFF(YEAR, pDataNasc, CURDATE()));
+END $$
 DELIMITER ;
+
