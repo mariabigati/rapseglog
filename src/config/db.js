@@ -1,8 +1,8 @@
 const mysql = require('mysql2/promise');
 const pool = mysql.createPool({
-    host: ' 10.87.169.30',
-    user: 'vivian',
-    password: 'MySQL1234',
+    host: 'localhost',
+    user: 'root',
+    password: '1234',
     database: 'rapseglog',
     port: 3306,
     waitForConnections: true,
@@ -12,9 +12,9 @@ const pool = mysql.createPool({
 
 (async () => {
     try {
-        const connection = await pool.getConnection;
+        const connection = await pool.getConnection();
         console.log('Conexão com o MySQL bem sucedida!');
-        connection.release;
+        connection.release();
     } catch (error) {
         console.error(`Erro ao conectar com o banco de dados: ${error}`);
     }

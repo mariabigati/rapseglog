@@ -1,6 +1,7 @@
 const { pool } = require('../config/db');
 
 const entregaModel = {
+
     selectTodasEntregas: async() => {
         const sql = 'SELECT * FROM entregas;';
         const [rows] = await pool.query(sql);

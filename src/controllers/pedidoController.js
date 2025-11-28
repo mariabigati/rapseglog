@@ -15,7 +15,7 @@ const pedidoController = {
 
     cadastrarPedido: async (req, res) => {
         try {
-            const {data_pedido, id_cliente } = req.body;
+            const {data_pedido, id_cliente} = req.body;
 
             if(!id_cliente || !data_pedido) {
                 return res.status(400).json({message: 'Há dados faltantes! Tente novamente.'});
@@ -23,10 +23,6 @@ const pedidoController = {
 
             const resultado = await pedidoModel.insertPedido(data_pedido, id_cliente);
 
-             if (resultado.affectedRows === 0) {
-                return res.status(200).json({ message: 'Houve um erro ao inserir dados do pedido no sistema. Tente novamente!' });
-            
-            }
             res.status(201).json({message: 'Registro incluído com sucesso!', data: resultado});
 
         } catch (error) {
