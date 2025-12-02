@@ -77,7 +77,7 @@ DELIMITER $$
 	CREATE PROCEDURE cadastrar_endereco(IN pEstado VARCHAR(45), IN pBairro VARCHAR(45), IN pLogradouro VARCHAR(45), IN pNumero INT, IN pCep CHAR(9), IN pIdCliente INT)
 	BEGIN
 		INSERT INTO enderecos (estado, cidade, bairro, logradouro, numero, cep, fk_id_cliente) VALUES 
-        (pEstado, pBairro, pLogradouro, pNumero, pCep, pIdCliente);
+        (pEstado, pCidade, pBairro, pLogradouro, pNumero, pCep, pIdCliente);
 	END $$
 DELIMITER ;
 
