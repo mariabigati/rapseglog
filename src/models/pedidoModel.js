@@ -7,9 +7,10 @@ const pedidoModel = {
         return rows;
     },
 
-    insertPedido: async(pDataPedido, pIdCliente ) => {
-        const procedure = 'CALL cadastrar_novo_pedido(?, ?);';
-        const values = [pDataPedido, pIdCliente];
+    insertPedido: async(pDataPedido, pIdCliente, pIdTipoEntrega, pDistancia, pPesoCarga, pValorBaseKG, pValorBaseKM) => {
+        const procedure = 'CALL cadastrar_novo_pedido(?, ?, ?, ?, ?, ?, ?);';
+        const values = [pDataPedido, pIdCliente,
+        pIdTipoEntrega, pDistancia, pPesoCarga, pValorBaseKG, pValorBaseKM];
         const [rows] = await pool.query(procedure, values);
         return rows[0];
     }

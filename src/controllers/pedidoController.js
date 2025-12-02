@@ -15,13 +15,14 @@ const pedidoController = {
 
     cadastrarPedido: async (req, res) => {
         try {
-            const {data_pedido, id_cliente} = req.body;
+            const {data_pedido, id_cliente, 
+            id_tipo_entrega, distancia, peso_carga, valor_base_km, valor_base_kg} = req.body;
 
-            if(!id_cliente || !data_pedido) {
+            if(!id_cliente || !data_pedido || !id_tipo_entrega) {
                 return res.status(400).json({message: 'Há dados faltantes! Tente novamente.'});
             }
 
-            const resultado = await pedidoModel.insertPedido(data_pedido, id_cliente);
+            const resultado = await pedidoModel.insertPedido(data_pedido, id_cliente, id_tipo_entrega, distancia, peso_carga, valor_base_km, valor_base_kg);
 
             res.status(201).json({message: 'Registro incluído com sucesso!', data: resultado});
 

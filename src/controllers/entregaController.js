@@ -16,23 +16,21 @@ const entregaController = {
 
     cadastraEntregas: async (req, res) => {
         try {
-            const {id_pedido, id_tipo_entrega, id_status_entrega, distancia, peso_carga, valor_base_kg,
-            valor_base_km
-            } = req.body;
+            const {id_pedido, id_status_entrega, valor_distancia, valor_peso, valor_base, acresimo, desconto, taxa_extra, valor_final} = req.body;
 
-            if (!id_pedido || !id_tipo_entrega || !id_status_entrega || !distancia || !peso_carga || !valor_base_kg || !valor_base_km) {
+            if (!id_pedido ||  !id_status_entrega || !valor_distancia || !valor_peso || !valor_base || !valor_final) {
                 return res.status(400).json({ message: 'Há dados faltantes! Tente novamente.'});
             }
 
-            if (isNaN(id_pedido) || isNaN(id_tipo_entrega) || isNaN(id_status_entrega) || isNaN(distancia) || isNaN(peso_carga) || isNaN(valor_base_kg) || isNaN(valor_base_km)) {
+            if (isNaN(id_pedido) || isNaN(id_status_entrega) || isNaN(valor_distancia) || isNaN(valor_peso) || isNaN(valor_base) || isNaN(valor_final)) {
                 return res.status(400).json({ message: 'Há dados inválidos! Tente novamente.'});
             }
 
-            const resultado = await entregaModel.insertEntrega(id_pedido, id_tipo_entrega, id_status_entrega, distancia, peso_carga, valor_base_kg, valor_base_km);
+            const resultado = await entregaModel.insertEntrega(id_pedido, id_status_entrega, valor_distancia, valor_peso, valor_base, acresimo, desconto, taxa_extra, valor_final);
 
-            if (resultado.affectedRows === 0) {
-                return res.status(200).json({ message: 'Houve um erro ao inserir os dados da entrega no sistema. Tente novamente!' });
-            }
+            // if (resultado.affectedRows() === 0) {
+            //     return res.status(200).json({ message: 'Houve um erro ao inserir os dados da entrega no sistema. Tente novamente!' });
+            // }
 
             res.status(201).json({ message: 'Dados da entrega inseridos com sucesso!', data: resultado });
 

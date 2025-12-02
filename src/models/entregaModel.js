@@ -8,9 +8,9 @@ const entregaModel = {
         return rows;
     },
 
-    insertEntrega: async(pIdPedido, pDistancia, pPesoCarga, pValorBaseKG, pValorBaseKM) => {
-        const procedure = 'CALL cadastrar_nova_entrega(?, ?, ?, ?, ?);';
-        const values = [pIdPedido, pDistancia, pPesoCarga, pValorBaseKG, pValorBaseKM];
+    insertEntrega: async(pIdPedido, pIdStatus, pValorDistancia, pValorPeso, pValorBase, pAcresimo, pDesconto, pTaxaExtra, pValorFinal) => {
+        const procedure = 'CALL cadastrar_nova_entrega(?, ?, ?, ?, ?, ?, ?, ?, ?);';
+        const values = [pIdPedido, pIdStatus, pValorDistancia, pValorPeso, pValorBase, pAcresimo, pDesconto, pTaxaExtra, pValorFinal];
         const [rows] = await pool.query(procedure, values);
         return rows[0];
     }
