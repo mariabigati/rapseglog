@@ -66,15 +66,15 @@ const entregaController = {
                 
             const resultado = await entregaModel.insertEntrega(id_entrega, id_status_entrega);
 
-             if (resultUpdate.affectedRows() === 1 && resultUpdate.changedRows() === 0) {
-                return res.status(200).json({ message: 'Não há alterações a serem realizadas' });
-            }
+            //  if (resultUpdate().affectedRows() === 1 && resultUpdate().changedRows() === 0) {
+            //     return res.status(200).json({ message: 'Não há alterações a serem realizadas' });
+            // }
 
-            if (resultUpdate.affectedRows() === 1 && resultUpdate.changedRows() === 1) {
-                return res.status(200).json({ message: 'Registro alterado com sucesso' });
-            }
+            // if (resultUpdate().affectedRows() === 1 && resultUpdate().changedRows() === 1) {
+            //     return res.status(200).json({ message: 'Registro alterado com sucesso' });
+            // }
 
-            res.status(201).json({ message: 'Dados da entrega inseridos com sucesso!', data: resultado });
+            res.status(201).json({ message: 'Dados da entrega atualizados com sucesso!', data: resultado });
 
 
         } catch (error) {
