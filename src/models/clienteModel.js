@@ -84,6 +84,27 @@ const clienteModel = {
     const [rows] = await pool.query(sql, values);
     return rows;
   },
+  atualizarCliente: async(id, nome, cpf) => {
+    const sql = `CALL atualizar_cliente(?, ?, ?)`;
+    const values = [id, nome, cpf];
+    const rows = await pool.query(sql, values);
+    return rows;
+  },
+
+  atualizarEndereco: async(id, cep, numero) => {
+    const sql = `CALL atualizar_endereco(?, ?, ?)`;
+    const values = [id, cep, numero];
+    const rows = await pool.query(sql, values);
+    return rows;
+  },
+
+  atualizarTelefone: async (id, telefone) => {
+    const sql = `CALL atualizar_telefone(?, ?)`;
+    const values =  [id, telefone];
+    const rows = await pool.query(sql, values);
+    return rows;
+  }
+
 };
 
 module.exports = { clienteModel };

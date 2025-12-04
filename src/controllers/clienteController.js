@@ -210,58 +210,99 @@ const clienteController = {
     }
   },
 
-  alterarRegistro: async (req, res) => {
-    try {
-      const idCliente = Number(req.params.idCliente);
-      const { nome, cpf } = req.body;
-      const existe = await clienteModel.verificaCpf(cpf);
 
-      if (
-        !idCliente ||
-        (!nome && !cpf) ||
-        (!isNaN(nome) && isNaN(cpf)) ||
-        typeof idCliente != "number"
-      ) {
-        return res
-          .status(400)
-          .json({ message: `Verifique os dados enviados e tente novamente` });
-      }
+  atualizarCliente: async (req, res) => {
+  try {
+    const idCliente = Number(req.params.idCliente);
+    const { nome, cpf, cep, numero, telefone } = req.body;
 
-      const clienteAtual = await clienteModel.selectById(idCliente);
-      if (clienteAtual.length === 0) {
-        return res.status(200).json({ message: "Cliente não localizado" });
+    // validação do id
+    if (!idCliente || isNaN(idCliente)) {
+      return res.status(400).json({ message: "ID inválido." });
+    }
+
+    // busca cliente atual por ID
+    const clienteAtual = await clienteModel.selectById(idCliente);
+    if (clienteAtual.length === 0) {
+      return res.status(404).json({ message: "Cliente não encontrado." });
+    }
+
+    // validação nome
+    if (nome && !isNaN(nome)) {
+      return res.status(400).json({ message: "Nome inválido." });
+    }
+
+    // validação cpf (tipagem)
+    if (cpf) {
+      if (isNaN(cpf)) {
+        return res.status(400).json({ message: "CPF inválido." });
       }
-      
-      if (existe.length > 0) {
+      // validação cpf (se já não existe cadastrado)
+      const existeCPF = await clienteModel.verificaCpf(cpf);
+      if (existeCPF.length > 0) {
         return res.status(409).json({
-          message: "O novo CPF já está cadastrado. Tente outro cpf.",
+          message: "Este CPF já está cadastrado."
         });
       }
+    }
 
+    let alteracoes = [];
+
+    if (nome || cpf) {
       const novoNome = nome ?? clienteAtual[0].nome_cliente;
       const novoCpf = cpf ?? clienteAtual[0].cpf_cliente;
 
-      const resultUpdate = await clienteModel.update(
-        idCliente,
-        novoNome,
-        novoCpf
-      );
-      if (resultUpdate.affectedRows === 1 && resultUpdate.changedRows === 0) {
-        return res
-          .status(200)
-          .json({ message: "Não há alterações a serem realizadas" });
+      await clienteModel.atualizarCliente(idCliente, novoNome, novoCpf);
+      alteracoes.push("cliente");
+    }
+
+    if (cep || numero) {
+      // validando CEP via ViaCEP
+      if (cep) {
+        try {
+          const dadosCep = await (
+            await fetch(`https://viacep.com.br/ws/${cep}/json/`)
+          ).json();
+          if (dadosCep.erro) {
+            return res.status(400).json({ message: "CEP inválido!" });
+          }
+        } catch (err) {
+          return res.status(502).json({
+            message: "Erro ao consultar o ViaCEP.",
+            detalhe: err.message
+          });
+        }
       }
-      if (resultUpdate.affectedRows === 1 && resultUpdate.changedRows === 1) {
-        res.status(200).json({ message: "Registro alterado com sucesso" });
-      }
-    } catch (error) {
-      console.error(error);
-      res.status(500).json({
-        message: "Ocorreu um erro no servidor",
-        errorMessage: error.message,
+
+      await clienteModel.atualizarEndereco(idCliente, cep, numero);
+      alteracoes.push("endereco");
+    }
+
+    if (telefone) {
+      await clienteModel.atualizarTelefone(idCliente, telefone);
+      alteracoes.push("telefone");
+    }
+
+    if (alteracoes.length === 0) {
+      return res.status(200).json({
+        message: "Nenhum dado enviado para atualização."
       });
     }
-  },
+
+    return res.status(200).json({
+      message: "Dados atualizados com sucesso!",
+      alterado: alteracoes
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Erro no servidor",
+      errorMessage: error.message
+    });
+  }
+},
+
 };
 
 module.exports = { clienteController };
