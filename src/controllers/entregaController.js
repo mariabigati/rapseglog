@@ -48,7 +48,7 @@ const entregaController = {
                 return res.status(400).json({ message: 'Há dados faltantes! Tente novamente.'});
             }
 
-            if (isNaN(id_entrega) || isNaN(status_entrega)) {
+            if (isNaN(id_entrega) || !isNaN(status_entrega)) {
                 return res.status(400).json({ message: 'Há dados inválidos! Tente novamente.'});
             }
 
