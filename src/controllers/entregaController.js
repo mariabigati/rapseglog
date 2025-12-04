@@ -42,7 +42,8 @@ const entregaController = {
 
     atualizaEstadoEntrega: async (req, res) => {
         try {
-            const {id_entrega, status_entrega} = req.body;
+            const id_entrega = Number(req.params.idEntrega);
+            const {status_entrega} = req.body;
             let id_status_entrega;
             if (!id_entrega ||  !status_entrega) {
                 return res.status(400).json({ message: 'Há dados faltantes! Tente novamente.'});
@@ -64,7 +65,7 @@ const entregaController = {
                 return res.status(400).json({ message: 'Este status é inválido! Por favor, digite o status calculado, em transito, entregue ou cancelado.'});
             }
                 
-            const resultado = await entregaModel.insertEntrega(id_entrega, id_status_entrega);
+            const resultado = await entregaModel.updateEstadoEntrega(id_entrega, id_status_entrega);
 
             //  if (resultUpdate().affectedRows() === 1 && resultUpdate().changedRows() === 0) {
             //     return res.status(200).json({ message: 'Não há alterações a serem realizadas' });
