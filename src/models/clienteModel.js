@@ -9,7 +9,8 @@ const clienteModel = {
 
   selectById: async (idCliente) => {
     const sql = "SELECT * FROM clientes WHERE id_cliente = ?";
-    const [rows] = await pool.query(sql, [idCliente]);
+    const values = [idCliente];
+    const [rows] = await pool.query(sql, values);
     return rows;
   },
   
@@ -62,22 +63,9 @@ const clienteModel = {
     return rows;
   },
 
-  deleteTelefone: async (idCLiente) => {
-    const sql = "CALL excluir_telefone(?);";
-    const values = [idCLiente];
-    const [rows] = await pool.query(sql, values);
-    return rows;
-  },
-
-  deleteEndereco: async (idCLiente) => {
-    const sql = "CALL excluir_endereco(?);";
-    const values = [idCLiente];
-    const [rows] = await pool.query(sql, values);
-    return rows;
-  },
-
   deleteCliente: async (idCLiente) => {
     const sql = "CALL excluir_cliente(?);";
+    // essa procedure de excluir clientes já envolve a exclusão de telefones e endereços
     const values = [idCLiente];
     const [rows] = await pool.query(sql, values);
     return rows;
@@ -86,6 +74,13 @@ const clienteModel = {
   verificaPedido: async (idCLiente) => {
     const sql = "SELECT * FROM pedidos WHERE fk_id_cliente = ?";
     const values = [idCLiente];
+    const [rows] = await pool.query(sql, values);
+    return rows;
+  },
+
+  updateCliente: async (idCliente) => {
+    const sql = "CALL atualizar_cliente()";
+    const values = [idCliente];
     const [rows] = await pool.query(sql, values);
     return rows;
   },

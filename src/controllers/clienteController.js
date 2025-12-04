@@ -3,14 +3,20 @@ const { clienteModel } = require("../models/clienteModel");
 const clienteController = {
   selecionaTodos: async (req, res) => {
     try {
-      const { idCliente } = req.query;
+      const { idCliente } = req.query; // faz com que seja possível procurar cliente por ID na query
 
-      if (idCliente) {
+      if (idCliente) { // caso tenha o ID na query, usa função de selecionar por ID
         const cliente = await clienteModel.selectById(idCliente);
         return res.status(200).json({ data: cliente });
       }
 
+      // caso não tenha ID pela query, usa função de selecionar todos
       const resultado = await clienteModel.selectAll();
+      if (resultado.length === 0) {
+        return res
+          .status(200)
+          .json({ message: "A consulta não retornou resultados" });
+      }
       return res.status(200).json({ data: resultado });
     } catch (error) {
       console.error(error);
@@ -18,7 +24,7 @@ const clienteController = {
     }
   },
 
-  incluiRegistro: async (req, res) => {
+  incluiCliente: async (req, res) => {
     try {
       let {
         nome,
@@ -160,13 +166,16 @@ const clienteController = {
     }
   },
 
-  excluiRegistro: async (req, res) => {
+  excluiCliente: async (req, res) => {
     try {
       const idCliente = Number(req.params.idCliente);
+
+      // validação de id válido
       if (!idCliente || !Number.isInteger(idCliente)) {
         return res.status(400).json({ message: "Forneça um id válido" });
       }
 
+      // validação de cliente existente via id
       const clienteSelecionado = await clienteModel.selectById(idCliente);
       if (clienteSelecionado.length === 0) {
         return res
@@ -174,6 +183,7 @@ const clienteController = {
           .json({ message: "Cliente não localizado na base de dados" });
       }
 
+      // validação para não permitir exclusão caso o cliente esteja atrelado a um pedido
       const existePedido = await clienteModel.verificaPedido(idCliente);
       if (existePedido.length > 0) {
         return res
@@ -183,33 +193,67 @@ const clienteController = {
           });
       }
 
-      const deletarTelefone = await clienteModel.deleteCliente(idCliente);
-      if (deletarTelefone.affectedRows === 0) {
-        return res
-          .status(200)
-          .json({
-            message: "Ocorreu um erro ao excluir o telefone do cliente",
-          });
-      }
-
-      const deletarEndereco = await clienteModel.deleteEndereco(idCliente);
-      if (deletarEndereco.affectedRows === 0) {
-        return res
-          .status(200)
-          .json({
-            message: "Ocorreu um erro ao excluir o endereço do cliente",
-          });
-      }
-
-      if (deletarEndereco.affectedRows >= 1 || deletarTelefone.affectedRows >= 1) {
-        const resultadoDelete = await clienteModel.deleteCliente(idCliente);
-        if (resultadoDelete.affectedRows === 0) {
+      // confirmação de exclusão
+      const resultadoDelete = await clienteModel.deleteCliente(idCliente);
+      res.status(200).json({ message: "Cliente excluido com sucesso" });
+       if (resultadoDelete.affectedRows === 0) {
           return res
             .status(200)
             .json({ message: "Ocorreu um erro ao excluir o cliente" });
         }
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({
+        message: "Ocorreu um erro no servidor",
+        errorMessage: error.message,
+      });
+    }
+  },
+
+  alterarRegistro: async (req, res) => {
+    try {
+      const idCliente = Number(req.params.idCliente);
+      const { nome, cpf } = req.body;
+      const existe = await clienteModel.verificaCpf(cpf);
+
+      if (
+        !idCliente ||
+        (!nome && !cpf) ||
+        (!isNaN(nome) && isNaN(cpf)) ||
+        typeof idCliente != "number"
+      ) {
+        return res
+          .status(400)
+          .json({ message: `Verifique os dados enviados e tente novamente` });
       }
-      res.status(200).json({ message: "Cliente excluido com sucesso" });
+
+      const clienteAtual = await clienteModel.selectById(idCliente);
+      if (clienteAtual.length === 0) {
+        return res.status(200).json({ message: "Cliente não localizado" });
+      }
+      
+      if (existe.length > 0) {
+        return res.status(409).json({
+          message: "O novo CPF já está cadastrado. Tente outro cpf.",
+        });
+      }
+
+      const novoNome = nome ?? clienteAtual[0].nome_cliente;
+      const novoCpf = cpf ?? clienteAtual[0].cpf_cliente;
+
+      const resultUpdate = await clienteModel.update(
+        idCliente,
+        novoNome,
+        novoCpf
+      );
+      if (resultUpdate.affectedRows === 1 && resultUpdate.changedRows === 0) {
+        return res
+          .status(200)
+          .json({ message: "Não há alterações a serem realizadas" });
+      }
+      if (resultUpdate.affectedRows === 1 && resultUpdate.changedRows === 1) {
+        res.status(200).json({ message: "Registro alterado com sucesso" });
+      }
     } catch (error) {
       console.error(error);
       res.status(500).json({
