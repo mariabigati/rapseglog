@@ -71,9 +71,9 @@ const clienteModel = {
     return rows;
   },
 
-  verificaPedido: async (idCLiente) => {
+  verificaPedido: async (idCliente) => {
     const sql = "SELECT * FROM pedidos WHERE fk_id_cliente = ?";
-    const values = [idCLiente];
+    const values = [idCliente];
     const [rows] = await pool.query(sql, values);
     return rows;
   },
@@ -84,16 +84,16 @@ const clienteModel = {
     const [rows] = await pool.query(sql, values);
     return rows;
   },
-  atualizarCliente: async(id, nome, cpf) => {
-    const sql = `CALL atualizar_cliente(?, ?, ?)`;
-    const values = [id, nome, cpf];
+  atualizarCliente: async(idCliente, novoNome, novoCpf, novoEmail, novaDataNasc) => {
+    const sql = `CALL atualizar_cliente(?, ?, ?, ?, ?)`;
+    const values = [idCliente, novoNome, novoCpf, novoEmail, novaDataNasc];
     const rows = await pool.query(sql, values);
     return rows;
   },
 
-  atualizarEndereco: async(id, cep, numero) => {
-    const sql = `CALL atualizar_endereco(?, ?, ?)`;
-    const values = [id, cep, numero];
+  atualizarEndereco: async(idCliente, novoCep, novoNumero, novoEstado, novaCidade, novoBairro, novoLogradouro) => {
+    const sql = `CALL atualizar_endereco(?, ?, ?, ?, ?, ?, ?)`;
+    const values = [idCliente, novoCep, novoNumero, novoEstado, novaCidade, novoBairro, novoLogradouro];
     const rows = await pool.query(sql, values);
     return rows;
   },
