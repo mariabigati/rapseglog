@@ -38,6 +38,10 @@ const pedidoController = {
             if (!id_cliente || !data_pedido || !id_tipo_entrega) {
                 return res.status(400).json({ message: 'Há dados faltantes! Tente novamente.' });
             }
+            
+            if (distancia === 0 || peso === 0 || valor_kg === 0 || valor_km === 0) {
+                return res.status(400).json({ message: 'Valores não podem ser 0! Tente novamente.' });
+            }
 
             const resultado = await pedidoModel.insertPedido(data_pedido, id_cliente, id_tipo_entrega, distancia, peso_carga, valor_base_km, valor_base_kg);
 
@@ -60,6 +64,10 @@ const pedidoController = {
                 return res.status(400).json({ message: 'Verifique os dados enviados e tente novamente.' });
             }
 
+            if (distancia === 0 || peso === 0 || valor_kg === 0 || valor_km === 0) {
+                return res.status(400).json({ message: 'Valores não podem ser 0! Tente novamente.' });
+            }
+
             const pedidoAtual = await pedidoModel.selectPedidoPorId(idPedido);
 
             if (pedidoAtual.length === 0) {
@@ -71,7 +79,19 @@ const pedidoController = {
             const novoValorKg = valor_kg ?? pedidoAtual[0].valor_base_kg;
             const novoValorKm = valor_km ?? pedidoAtual[0].valor_base_km;
 
-            
+            const resultUpdate = await pedidoModel.updatePedido(idPedido, novaDistancia, novoPeso, novoValorKg, novoValorKm);
+
+            // testes de validação se houve alguma alteração nas informações do pedido, puxa as linhas afetadas da procedure
+            const linhas = resultUpdate[0][0].linhas_afetadas || 0;
+
+            if (linhas === 0) {
+                return res.status(200).json({ message: 'Não há alterações a serem realizadas.', data: linhas });
+            }
+
+            return res.status(200).json({
+                message: 'Registro alterado com sucesso!', data: linhas
+            });
+
 
         } catch (error) {
             console.error(error);
