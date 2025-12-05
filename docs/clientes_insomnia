@@ -1,0 +1,224 @@
+type: collection.insomnia.rest/5.0
+schema_version: "5.1"
+name: BackProjeto
+meta:
+  id: wrk_9f1c8edc7cca4c26aadfc93d17e8502b
+  created: 1764329718288
+  modified: 1764329718288
+  description: ""
+collection:
+  - name: Pedidos
+    meta:
+      id: fld_c66be4568ee9434b9cdbaeb825e992c9
+      created: 1764329779463
+      modified: 1764329779463
+      sortKey: -1764329779463
+      description: ""
+  - name: Clientes
+    meta:
+      id: fld_39ad7aecbf66455480bd142fb75c086f
+      created: 1764329783951
+      modified: 1764934539788
+      sortKey: -1764329783951
+      description: ""
+    children:
+      - url: http://localhost:8000/clientes/incluir
+        name: INSERIR
+        meta:
+          id: req_eadd91387c2346f2b0a9505f1cb6e848
+          created: 1764329796344
+          modified: 1764939774942
+          isPrivate: false
+          description: ""
+          sortKey: -1764337836845
+        method: POST
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "nome": "TesteFINAL",
+              "cpf": "99988877765",
+              "email": "teste_final@gmail.com",
+              "dataNasc": "2000-12-01",
+              "telefone": "19988765544",
+              "numero": 7,
+              "cep": "13170023"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.0.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8000/clientes
+        name: SELECT
+        meta:
+          id: req_dc251868e76c49f481d749eb606a2710
+          created: 1764337872873
+          modified: 1764935024199
+          isPrivate: false
+          description: ""
+          sortKey: -1764337836945
+        method: GET
+        parameters:
+          - name: idCliente
+            value: ""
+            description: ""
+            disabled: false
+        headers:
+          - name: User-Agent
+            value: insomnia/12.0.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/clientes/excluir/24
+        name: DELETE
+        meta:
+          id: req_d71e2fbb9fbd4f719712d85687d1ae8b
+          created: 1764685247489
+          modified: 1764851868864
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837045
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/clientes/atualizarCli/22
+        name: UPDATE CLIENTE
+        meta:
+          id: req_19d5029366134aed9604f6d8f72c28c7
+          created: 1764851851077
+          modified: 1764937021580
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837145
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |
+            {
+            	"nome": "Vivian",
+            	"cpf": "55555555521",
+            	"email": "vivian@gmail.com"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/clientes/atualizarEnd/23
+        name: UPDATE ENDERECO
+        meta:
+          id: req_b0cde07a605541afaa045a01d108a93f
+          created: 1764934524923
+          modified: 1764938026693
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837245
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"cep": "13188092",
+            	"numero": 55
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/clientes/atualizarTel/25
+        name: UPDATE TELEFONE
+        meta:
+          id: req_e7872e82056746eaad84c61e3c763a37
+          created: 1764934540782
+          modified: 1764942904791
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837345
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"telefone": "19988111111"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+  - name: Entregas
+    meta:
+      id: fld_d7518c77a27e4a609e0cdd6b4e24b0da
+      created: 1764329789203
+      modified: 1764329789203
+      sortKey: -1764329789203
+      description: ""
+cookieJar:
+  name: Default Jar
+  meta:
+    id: jar_bd068b26489e9ab6f7fc992e823a7971231b4ed9
+    created: 1764329718304
+    modified: 1764329718304
+environments:
+  name: Base Environment
+  meta:
+    id: env_bd068b26489e9ab6f7fc992e823a7971231b4ed9
+    created: 1764329718300
+    modified: 1764329718300
+    isPrivate: false
