@@ -1,8 +1,13 @@
 const { entregaModel } = require('../models/entregaModel');
 const entregaController = {
 
-    selecionarTodasEntregas: async (req, res) => {
+    selecionarEntregas: async (req, res) => {
         try {
+            const {idEntrega} = req.query;
+            if (idEntrega) {
+                const resultadoEntrega = await entregaModel.selectById(idEntrega);
+                return res.status(200).json({data : resultadoEntrega});
+            }
             const resultado = await entregaModel.selectTodasEntregas();
             if (resultado.length === 0) {
                 return res.status(200).json({ message: 'Não foram encontrados resultados' });

@@ -3,8 +3,15 @@ const { pool } = require('../config/db');
 const entregaModel = {
 
     selectTodasEntregas: async() => {
-        const sql = 'SELECT * FROM entregas;';
+        const sql = 'SELECT * FROM vw_entregas;';
         const [rows] = await pool.query(sql);
+        return rows;
+    },
+
+    selectById: async (pIdEntrega) => {
+        const sql = 'SELECT * FROM vw_entregas WHERE id_entrega =?;';
+        const values = [pIdEntrega];
+        const [rows] = await pool.query(sql, values);
         return rows;
     },
 

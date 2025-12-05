@@ -303,3 +303,19 @@ DETERMINISTIC
 	END $$
 DELIMITER ;
 
+CREATE VIEW vw_entregas AS 
+SELECT 
+	c.nome_cliente, 
+	se.status_entrega, 
+	te.tipo_entrega,
+	e.valor_distancia,
+	e.valor_peso, 
+	e.valor_base,
+	e.acrescimo, 
+	e.desconto, 
+	e.taxa_extra, 
+	e.valor_final FROM clientes as c
+    JOIN pedidos ON
+SHOW TABLES;
+
+SELECT * FROM entregas;
