@@ -93,7 +93,7 @@ const clienteController = {
       await clienteModel.insertCliente(nome, cpf, email, dataNasc);
 
       // cria uma constante para puxar e salvar o id do cliente que está sendo inserido
-      // assim consigomos salvar como fk em endereços e telefones
+      // assim conseguimos salvar como fk em endereços e telefones
       const ultimo = await clienteModel.selectUltimoId();
       const idCliente = ultimo[0].idCliente;
 
@@ -165,195 +165,398 @@ const clienteController = {
 
 
   atualizarCliente: async (req, res) => {
-  try {
-    const idCliente = Number(req.params.idCliente);
-    const { nome, cpf, email, dataNasc } = req.body;
+    try {
+      const idCliente = Number(req.params.idCliente);
+      const { nome, cpf, email, dataNasc } = req.body;
 
-    // validação do id
-    if (!idCliente || isNaN(idCliente)) {
-      return res.status(400).json({ message: "ID inválido." });
-    }
+      // validação do id
+      if (!idCliente || isNaN(idCliente)) {
+        return res.status(400).json({ message: "ID inválido." });
+      }
 
-    // busca cliente atual por ID
-    const clienteAtual = await clienteModel.selectById(idCliente);
-    if (clienteAtual.length === 0) {
-      return res.status(404).json({ message: "Cliente não encontrado." });
-    }
+      // busca cliente atual
+      const clienteAtual = await clienteModel.selectById(idCliente);
+      if (clienteAtual.length === 0) {
+        return res.status(404).json({ message: "Cliente não encontrado." });
+      }
 
-    // validação nome
-    if (nome && !isNaN(nome)) {
-      return res.status(400).json({ message: "Nome inválido." });
-    }
+      const atual = clienteAtual[0];
 
-    // validação email
-    if (!email.includes("@")) {
+      // nome inválido
+      if (nome && !isNaN(nome)) {
+        return res.status(400).json({ message: "Nome inválido." });
+      }
+
+      // email inválido
+      if (email && !email.includes("@")) {
         return res.status(400).json({ message: "Email inválido." });
       }
-      // validação email (se já não existe cadastrado)
-      const existeEMAIL = await clienteModel.verificaEmail(email);
-      if (existeEMAIL.length > 0) {
-        return res.status(409).json({ message: "Este E-mail já está cadastrado." });
-      }
 
-    // validação cpf (tipagem)
-    if (cpf) {
-      if (isNaN(cpf)) {
+      // cpf inválido
+      if (cpf && isNaN(cpf)) {
         return res.status(400).json({ message: "CPF inválido." });
       }
-      // validação cpf (se já não existe cadastrado)
-      const existeCPF = await clienteModel.verificaCpf(cpf);
-      if (existeCPF.length > 0) {
-        return res.status(409).json({message: "Este CPF já está cadastrado."});
-      }
-    }
 
-    // validação data de nascimento
-    if (isNaN(Date.parse(dataNasc))) {
+      // data nasc inválida
+      if (dataNasc && isNaN(Date.parse(dataNasc))) {
         return res.status(400).json({ message: "Data de nascimento inválida." });
       }
 
-    let alteracoes = [];
+      let novoNome = atual.nome_cliente;
+      let novoCpf = atual.cpf_cliente;
+      let novoEmail = atual.email_cliente;
+      let novaDataNasc = atual.data_nasc;
 
-    if (nome || cpf || email || dataNasc) {
-      const novoNome = nome ?? clienteAtual[0].nome_cliente;
-      const novoCpf = cpf ?? clienteAtual[0].cpf_cliente;
-      const novoEmail = email ?? clienteAtual[0].email_cliente;
-      const novaDataNasc = dataNasc ?? clienteAtual[0].data_nascimento;
+      let alteracoes = [];
+
+      // nome mudou
+      if (nome && nome !== atual.nome_cliente) {
+        novoNome = nome;
+        alteracoes.push("nome");
+      }
+
+      // cpf mudou
+      if (cpf && cpf !== atual.cpf_cliente) {
+        const existeCPF = await clienteModel.verificaCpf(cpf);
+
+        // impedir colisão com outro cliente
+        if (existeCPF.length > 0 && existeCPF[0].id_cliente !== idCliente) {
+          return res.status(409).json({ message: "Este CPF já está cadastrado em outro cliente." });
+        }
+
+        novoCpf = cpf;
+        alteracoes.push("cpf");
+      }
+
+      // email mudou
+      if (email && email !== atual.email_cliente) {
+        const existeEmail = await clienteModel.verificaEmail(email);
+
+        if (existeEmail.length > 0 && existeEmail[0].id_cliente !== idCliente) {
+          return res.status(409).json({ message: "Este Email já está cadastrado em outro cliente." });
+        }
+
+        novoEmail = email;
+        alteracoes.push("email");
+      }
+
+      // data nasc mudou
+      if (dataNasc && dataNasc !== atual.data_nasc) {
+        novaDataNasc = dataNasc;
+        alteracoes.push("data_nasc");
+      }
+
+      // se não mudou nada
+      if (alteracoes.length === 0) {
+        return res.status(200).json({
+          message: "Nenhum dado diferente para atualização."
+        });
+      }
 
       await clienteModel.atualizarCliente(idCliente, novoNome, novoCpf, novoEmail, novaDataNasc);
-      alteracoes.push("cliente");
+
+      return res.status(200).json({
+        message: "Dados atualizados com sucesso!",
+        alterado: alteracoes
+      });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro no servidor", errorMessage: error.message });
     }
-
-    if (alteracoes.length === 0) {
-      return res.status(200).json({message: "Nenhum dado enviado para atualização."});
-    }
-
-    return res.status(200).json({message: "Dados atualizados com sucesso!", alterado: alteracoes});
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({message: "Erro no servidor",errorMessage: error.message});
-  }
   },
 
+
   atualizarEndereco: async (req, res) => {
-  try {
-    const idCliente = Number(req.params.idCliente);
-    const { cep, numero } = req.body;
+    try {
+      const idCliente = Number(req.params.idCliente);
+      const { cep, numero } = req.body;
 
-    // validação do id
-    if (!idCliente || isNaN(idCliente)) {
-      return res.status(400).json({ message: "ID inválido." });
-    }
-    // busca cliente atual por ID
-    const clienteAtual = await clienteModel.selectById(idCliente);
-    if (clienteAtual.length === 0) {
-      return res.status(404).json({ message: "Cliente não encontrado." });
-    }
+      // validar id
+      if (!idCliente || isNaN(idCliente)) {
+        return res.status(400).json({ message: "ID inválido." });
+      }
 
-    // validação cep (tipagem)
-      if (isNaN(cep)) {
+      // buscar endereço atual
+      const enderecoAtual = await clienteModel.selectEnderecoByCliente(idCliente);
+      if (enderecoAtual.length === 0) {
+        return res.status(404).json({ message: "Endereço não encontrado para este cliente." });
+      }
+
+      const atual = enderecoAtual[0]; // atalho
+
+      // validação cep
+      if (cep && isNaN(cep)) {
         return res.status(400).json({ message: "CEP inválido." });
       }
 
-    let alteracoes = [];
+      // validação numero da residencia
+      if (numero && isNaN(numero)) {
+        return res.status(400).json({ message: "Número inválido." });
+      }
 
-    if (cep) {
+      // variáveis finais
+      let novoCep = atual.cep;
+      let novoNumero = atual.numero;
+      let novoEstado = atual.estado;
+      let novaCidade = atual.cidade;
+      let novoBairro = atual.bairro;
+      let novoLogradouro = atual.logradouro;
+
+      // se mandar cep novo consulta ViaCEP 
+      if (cep) {
         try {
-          const dadosCep = await (
-            await fetch(`https://viacep.com.br/ws/${cep}/json/`)
-          ).json();
-
+          const dadosCep = await (await fetch(`https://viacep.com.br/ws/${cep}/json/`)).json();
           if (dadosCep.erro) {
             return res.status(400).json({ message: "CEP inválido!" });
           }
-          // preencher endereço automaticamente!
+
+          // preenchendo novo endereço
+          novoCep = cep;
           novoEstado = dadosCep.uf;
           novaCidade = dadosCep.localidade;
           novoBairro = dadosCep.bairro;
           novoLogradouro = dadosCep.logradouro;
+
         } catch (err) {
-          console.error("Erro ViaCEP:", err);
-          return res.status(502).json({
-            message: "Erro ao consultar o ViaCEP.",
-            detalhe: err.message,
-          });
+          return res.status(502).json({ message: "Erro ao consultar o ViaCEP." });
         }
       }
-    if (cep || numero) {
-        const novoCep = cep ?? clienteAtual[0].cep;
-        const novoNumero = numero ?? clienteAtual[0].numero;
-        await clienteModel.atualizarEndereco(idCliente, novoCep, novoNumero, novoEstado, novaCidade, novoBairro, novoLogradouro);
-        alteracoes.push("endereco");
+
+      // se mudou número
+      if (numero) {
+        novoNumero = numero;
       }
 
-    if (alteracoes.length === 0) {
+      // detectar oq mudou
+      let alteracoes = [];
+
+      if (novoCep !== atual.cep) alteracoes.push("cep");
+      if (novoNumero !== atual.numero) alteracoes.push("numero");
+      if (novoEstado !== atual.estado) alteracoes.push("estado");
+      if (novaCidade !== atual.cidade) alteracoes.push("cidade");
+      if (novoBairro !== atual.bairro) alteracoes.push("bairro");
+      if (novoLogradouro !== atual.logradouro) alteracoes.push("logradouro");
+
+      // se nada mudou 
+      if (alteracoes.length === 0) {
+        return res.status(200).json({ message: "Nenhum dado diferente para atualização." });
+      }
+
+      // updtate
+      await clienteModel.atualizarEndereco(enderecoAtual[0].id_endereco, novoCep, novoNumero, novoEstado, novaCidade, novoBairro, novoLogradouro);
+
       return res.status(200).json({
-        message: "Nenhum dado enviado para atualização."
+        message: "Endereço atualizado com sucesso!",
+        alterado: alteracoes
       });
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Erro no servidor", errorMessage: error.message });
     }
-
-    return res.status(200).json({
-      message: "Dados atualizados com sucesso!",
-      alterado: alteracoes
-    });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Erro no servidor",
-      errorMessage: error.message
-    });
-  }
   },
+
 
   atualizarTelefone: async (req, res) => {
-  try {
-    const idCliente = Number(req.params.idCliente);
-    const { telefone } = req.body;
+    try {
+      const idCliente = Number(req.params.idCliente);
+      const { telefone } = req.body;
 
-    // validação do id
-    if (!idCliente || isNaN(idCliente)) {
-      return res.status(400).json({ message: "ID inválido." });
+      // validar id
+      if (!idCliente || isNaN(idCliente)) {
+        return res.status(400).json({ message: "ID inválido." });
+      }
+
+      // buscar telefone atual
+      const telAtual = await clienteModel.selectTelefoneByCliente(idCliente);
+      if (telAtual.length === 0) {
+        return res.status(404).json({ message: "Telefone não encontrado para este cliente." });
+      }
+
+      const atual = telAtual[0]; // atalho
+
+      // validação do telefone
+      if (!telefone || isNaN(telefone) || telefone.length !== 11) {
+        return res.status(400).json({
+          message: "Telefone inválido. Digite 11 números sem espaços ou símbolos."
+        });
+      }
+
+      // verificação se telefone é o mesmo que já era do cliente 
+      if (telefone === atual.telefone) {
+        return res.status(200).json({
+          message: "Nenhum dado diferente para atualização."
+        });
+      }
+
+      // verificação se telefone já existe para OUTRO cliente
+      const telefoneExistente = await clienteModel.verificaTelefone(telefone);
+
+      if (
+        telefoneExistente.length > 0 &&
+        telefoneExistente[0].fk_id_cliente !== idCliente
+      ) {
+        return res.status(409).json({
+          message: "Este número de telefone já está cadastrado por outro cliente."
+        });
+      }
+
+      // update
+      await clienteModel.atualizarTelefone(telAtual[0].id_telefone, telefone);
+
+      return res.status(200).json({ message: "Telefone atualizado com sucesso!", alterado: ["telefone"] });
+
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: "Erro no servidor", errorMessage: error.message });
     }
-    // busca cliente atual por ID
-    const clienteAtual = await clienteModel.selectById(idCliente);
-    if (clienteAtual.length === 0) {
-      return res.status(404).json({ message: "Cliente não encontrado." });
-    }
-
-    // validação telefone
-    if (isNaN(telefone || telefone.length !==11)) {
-        return res.status(400).json({ message: "Número de telefone inválido. Digite apenas os números sem símbolos ou espaços!" });
-    }
-    
-    let alteracoes = [];
-
-    if (telefone) {
-      await clienteModel.atualizarTelefone(idCliente, telefone);
-      alteracoes.push("telefone");
-    }
-
-    if (alteracoes.length === 0) {
-      return res.status(200).json({
-        message: "Nenhum dado enviado para atualização."
-      });
-    }
-
-    return res.status(200).json({
-      message: "Dados atualizados com sucesso!",
-      alterado: alteracoes
-    });
-
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({
-      message: "Erro no servidor",
-      errorMessage: error.message
-    });
-  }
   },
 
+  cadastrarEnderecoExtra: async (req, res) => {
+    try {
+      const idCliente = Number(req.params.idCliente);
+      const { cep, numero } = req.body;
+
+      if (!idCliente || isNaN(idCliente))
+        return res.status(400).json({ message: "ID inválido." });
+
+      if (!cep || isNaN(cep) || cep.length !== 8)
+        return res.status(400).json({ message: "CEP inválido." });
+
+      if (!numero || isNaN(numero))
+        return res.status(400).json({ message: "Número inválido." });
+
+      // busca cliente
+      const cliente = await clienteModel.selectById(idCliente);
+      if (cliente.length === 0)
+        return res.status(404).json({ message: "Cliente não encontrado." });
+
+      // consulta CEP
+      let estado, cidade, bairro, logradouro;
+      try {
+        const dados = await (await fetch(`https://viacep.com.br/ws/${cep}/json/`)).json();
+        if (dados.erro) return res.status(400).json({ message: "CEP não encontrado." });
+
+        estado = dados.uf;
+        cidade = dados.localidade;
+        bairro = dados.bairro;
+        logradouro = dados.logradouro;
+      } catch (err) {
+        return res.status(502).json({ message: "Erro ao consultar ViaCEP." });
+      }
+
+      // insert
+      await clienteModel.insertEnderecoExtra(estado, cidade, bairro, logradouro, numero, cep, idCliente);
+
+      return res.status(201).json({
+        message: "Endereço adicional cadastrado com sucesso!"
+      });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro no servidor", errorMessage: error.message });
+    }
+  },
+
+  deletarEndereco: async (req, res) => {
+    try {
+      const idCliente = Number(req.params.idCliente);
+      const idEndereco = Number(req.params.idEndereco);
+
+      if (!idCliente || isNaN(idCliente))
+        return res.status(400).json({ message: "ID do cliente inválido." });
+
+      if (!idEndereco || isNaN(idEndereco))
+        return res.status(400).json({ message: "ID do endereço inválido." });
+
+      const enderecos = await clienteModel.selectEnderecosByCliente(idCliente);
+
+      if (enderecos.length === 0)
+        return res.status(404).json({ message: "Nenhum endereço encontrado." });
+
+      // valida se o cliente não vai ficar com zero endereços, caso deletado
+      if (enderecos.length === 1)
+        return res.status(400).json({ message: "O cliente deve ter pelo menos 1 endereço. Não é possível deletar." });
+
+      // verifica se o endereço pertence ao cliente
+      const existe = enderecos.find(e => e.id_endereco === idEndereco);
+      if (!existe)
+        return res.status(403).json({ message: "Este endereço não pertence ao cliente." });
+
+      await clienteModel.deleteEndereco(idEndereco);
+
+      return res.status(200).json({ message: "Endereço removido com sucesso!" });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro no servidor", errorMessage: error.message });
+    }
+  },
+
+  cadastrarTelefoneExtra: async (req, res) => {
+    try {
+      const idCliente = Number(req.params.idCliente);
+      const { telefone } = req.body;
+
+      if (!idCliente || isNaN(idCliente))
+        return res.status(400).json({ message: "ID inválido." });
+
+      if (!telefone || isNaN(telefone) || telefone.length !== 11)
+        return res.status(400).json({ message: "Telefone inválido, use 11 dígitos." });
+
+      const cliente = await clienteModel.selectById(idCliente);
+      if (cliente.length === 0)
+        return res.status(404).json({ message: "Cliente não encontrado." });
+
+      const existe = await clienteModel.verificaTelefone(telefone);
+      if (existe.length > 0)
+        return res.status(409).json({ message: "Este telefone já está cadastrado." });
+
+      await clienteModel.insertTelefoneExtra(idCliente, telefone);
+
+      return res.status(201).json({
+        message: "Telefone adicional cadastrado com sucesso!"
+      });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro no servidor", errorMessage: error.message });
+    }
+  },
+
+  deletarTelefone: async (req, res) => {
+    try {
+      const idCliente = Number(req.params.idCliente);
+      const idTelefone = Number(req.params.idTelefone);
+
+      if (!idCliente || isNaN(idCliente))
+        return res.status(400).json({ message: "ID do cliente inválido." });
+
+      if (!idTelefone || isNaN(idTelefone))
+        return res.status(400).json({ message: "ID do telefone inválido." });
+
+      const telefones = await clienteModel.selectTelefonesByCliente(idCliente);
+
+      if (telefones.length === 0)
+        return res.status(404).json({ message: "Nenhum telefone encontrado." });
+
+      if (telefones.length === 1)
+        return res.status(400).json({ message: "O cliente deve ter pelo menos 1 telefone. Não é possível deletar." });
+
+      const existe = telefones.find(t => t.id_telefone === idTelefone);
+      if (!existe)
+        return res.status(403).json({ message: "Este telefone não pertence ao cliente." });
+
+      await clienteModel.deleteTelefone(idTelefone);
+
+      return res.status(200).json({ message: "Telefone removido com sucesso!" });
+
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ message: "Erro no servidor", errorMessage: error.message });
+    }
+  },
 };
 
 module.exports = { clienteController };

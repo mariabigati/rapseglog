@@ -77,18 +77,84 @@ const clienteModel = {
     return rows;
   },
 
-  atualizarEndereco: async(idCliente, novoCep, novoNumero, novoEstado, novaCidade, novoBairro, novoLogradouro) => {
+  atualizarEndereco: async(idEndereco, novoCep, novoNumero, novoEstado, novaCidade, novoBairro, novoLogradouro) => {
     const procedure = `CALL atualizar_endereco(?, ?, ?, ?, ?, ?, ?)`;
-    const values = [idCliente, novoCep, novoNumero, novoEstado, novaCidade, novoBairro, novoLogradouro];
+    const values = [idEndereco, novoCep, novoNumero, novoEstado, novaCidade, novoBairro, novoLogradouro];
     const rows = await pool.query(procedure, values);
     return rows;
   },
 
-  atualizarTelefone: async (id, telefone) => {
-    const procedure = `CALL atualizar_telefone(?, ?)`;
-    const values =  [id, telefone];
-    const rows = await pool.query(procedure, values);
+  selectEnderecoByCliente: async (idCliente) => {
+    const sql = "SELECT * FROM enderecos WHERE fk_id_cliente = ?";
+    const values = [idCliente];
+    const [rows] = await pool.query(sql, values);
     return rows;
+  },
+
+  atualizarTelefone: async (idTelefone, telefone) => {
+    const procedure = `CALL atualizar_telefone(?, ?)`;
+    const values =  [idTelefone, telefone];
+    const [rows] = await pool.query(procedure, values);
+    return rows;
+  },
+
+  selectTelefoneByCliente: async (idCliente) => {
+    const sql = "SELECT * FROM telefones WHERE fk_id_cliente = ?";
+    const [rows] = await pool.query(sql, [idCliente]);
+    return rows;
+  },
+
+  verificaTelefone: async (telefone) => {
+    const sql = "SELECT * FROM telefones WHERE telefone = ?";
+    const [rows] = await pool.query(sql, [telefone]);
+    return rows;
+  },
+
+  insertEnderecoExtra: async (estado, cidade, bairro, logradouro, numero, cep, idCliente) => {
+    const procedure = "CALL cadastrar_endereco(?,?,?,?,?,?,?)";
+    const values = [estado, cidade, bairro, logradouro, numero, cep, idCliente];
+    const [rows] = await pool.query(procedure, values);
+    return rows;
+  },
+
+  deleteEndereco: async (idEndereco) => {
+    const sql = `DELETE FROM enderecos WHERE id_endereco = ?`;
+    const values = [idEndereco];
+    const [rows] = await pool.query(sql, values);
+    return rows;
+  },
+
+  selectEnderecosByCliente: async (idCliente) => {
+    const sql = `SELECT * FROM enderecos WHERE fk_id_cliente = ?`;
+    const values = [idCliente];
+    const [rows] = await pool.query(sql, values);
+    return rows;
+  },
+
+  insertTelefoneExtra: async (idCliente, telefone) => {
+    const procedure = "CALL cadastrar_telefone(?,?)";
+    const values = [idCliente, telefone];
+    const [rows] = await pool.query(procedure, values);
+    return rows;
+  },
+
+  selectTelefonesByCliente: async (idCliente) => {
+  const sql = `SELECT * FROM telefones WHERE fk_id_cliente = ?`;
+  const [rows] = await pool.query(sql, [idCliente]);
+  return rows;
+  },
+
+  verificaTelefone: async (telefone) => {
+  const sql = `SELECT * FROM telefones WHERE telefone = ?`;
+  const [rows] = await pool.query(sql, [telefone]);
+  return rows;
+  },
+
+  deleteTelefone: async (idTelefone) => {
+  const sql = `DELETE FROM telefones WHERE id_telefone = ?`;
+  const values = [idTelefone];
+  const [rows] = await pool.query(sql, values);
+  return rows;
   }
 
 };
