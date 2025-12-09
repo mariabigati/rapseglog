@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS tipo_entregas(
     tipo_entrega VARCHAR(45) NOT NULL
 );
 
+SELECT * FROM status_entregas;
 CREATE TABLE IF NOT EXISTS status_entregas(
 	id_status_entrega INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     status_entrega VARCHAR(25) NOT NULL
@@ -119,13 +120,14 @@ END $$
 DELIMITER ;
 
 -- CADASTRO DE ENTREGAS COM OS CÁLCULOS BASE
+
 DELIMITER $$
 CREATE PROCEDURE cadastrar_nova_entrega(IN pIdPedido INT, IN pIdStatus INT)
 BEGIN
 	DECLARE pValorDistancia DECIMAL(10,2);
     DECLARE pValorPeso DECIMAL(10,2);
     DECLARE pValorBase DECIMAL(10,2);
-    DECLARE pValorFinalTemp DECIMAL(10,2);
+    DECLARE pValorAntesDesconto DECIMAL(10,2);
     DECLARE pAcrescimo DECIMAL(10,2);
     DECLARE pDesconto DECIMAL(10,2);
     DECLARE pTaxaExtra DECIMAL(10,2);
@@ -136,8 +138,8 @@ BEGIN
     SET pValorBase = calculo_valor_base(pIdPedido);
 	SET pAcrescimo = calcular_acrescimo(pIdPedido, pValorBase);
     SET pTaxaExtra = calcular_taxa_peso(pIdPedido);
-    SET pValorFinalTemp = pValorBase + pAcrescimo + pTaxaExtra;
-    SET pDesconto = calcular_desconto(pValorFinalTemp);
+    SET pValorAntesDesconto = pValorBase + pAcrescimo + pTaxaExtra;
+    SET pDesconto = calcular_desconto(pValorAntesDesconto);
     SET pValorFinal = calculo_valor_final(pValorBase, pAcrescimo, pTaxaExtra, pDesconto);
     
 	INSERT INTO entregas (fk_id_pedido, fk_id_status_entrega, valor_distancia, valor_peso, valor_base, acrescimo, desconto, taxa_extra, valor_final) 
@@ -157,7 +159,14 @@ DELIMITER ;
 DELIMITER $$
 CREATE PROCEDURE update_estado_entrega(IN pIdEntrega INT, IN pIdStatus INT)
 BEGIN 
-	UPDATE entregas SET fk_id_status_entrega = pIdStatus WHERE id_entrega = pIdEntrega;
+	DECLARE oldIdStatus INT;
+    SELECT fk_id_status_entrega INTO oldIdStatus FROM entregas WHERE id_entrega = pIdEntrega;
+	IF oldIdStatus = pIdStatus THEN
+		SELECT 0 AS linhas_afetadas;
+	ELSE
+		UPDATE entregas SET fk_id_status_entrega = pIdStatus WHERE id_entrega = pIdEntrega;
+		SELECT 1 AS linhas_afetadas;
+    END IF;
 END $$
 DELIMITER ;
 CALL update_estado_entrega(31, 4);
@@ -197,8 +206,6 @@ DELIMITER $$
     END $$
 DELIMITER ;
 
-
--- FUNÇÕES PARA CÁLCULOS DE VALORES FINAIS COM SELECT PARA CONSEGUIR OS DADOS "AUTOMÁTICAMENTE"
 -- VALOR DO PESO
 DELIMITER $$
 	CREATE FUNCTION calculo_valor_peso(pIdPedido INT)
@@ -244,7 +251,7 @@ DELIMITER ;
 
 
 DELIMITER $$
-	CREATE FUNCTION calculo_valor_final(pValorFinal DECIMAL(10,2), calculo_valor_distanciapAcrescimo DECIMAL(10,2), pTaxa DECIMAL(10,2), pDesconto DECIMAL(10,2))
+	CREATE FUNCTION calculo_valor_final(pValorFinal DECIMAL(10,2), pAcrescimo DECIMAL(10,2), pTaxa DECIMAL(10,2), pDesconto DECIMAL(10,2))
 	RETURNS DECIMAL(10,2)
 	DETERMINISTIC 
 	BEGIN
@@ -284,6 +291,7 @@ CREATE FUNCTION calcular_desconto(pValorFinal DECIMAL(10,2))
 		RETURN pDesconto;
 	END $$
 DELIMITER ;
+SELECT calcular_desconto(90186.00);
 
 -- TAXA DE R$15,00
 DELIMITER $$ 
@@ -305,17 +313,151 @@ DELIMITER ;
 
 CREATE VIEW vw_entregas AS 
 SELECT 
+    e.id_entrega,
+	p.id_pedido,
 	c.nome_cliente, 
-	se.status_entrega, 
-	te.tipo_entrega,
+	se.status_entrega,
+    te.tipo_entrega,
 	e.valor_distancia,
 	e.valor_peso, 
 	e.valor_base,
 	e.acrescimo, 
 	e.desconto, 
 	e.taxa_extra, 
-	e.valor_final FROM clientes as c
-    JOIN pedidos ON
-SHOW TABLES;
+	e.valor_final FROM entregas as e
+    JOIN pedidos as p on e.fk_id_pedido = p.id_pedido
+    JOIN clientes as c on c.id_cliente = p.fk_id_cliente
+    JOIN status_entregas as se on se.id_status_entrega = e.fk_id_status_entrega
+    JOIN tipo_entregas as te on te.id_tipo_entrega = p.fk_id_tipo_entrega;
 
+SELECT * FROM vw_entregas;
+
+SELECT nome_cliente as "Nome Cliente", SUM(valor_final) as "Valor Total Gasto" FROM vw_entregas GROUP BY nome_cliente;
 SELECT * FROM entregas;
+SELECT * FROM pedidos;
+
+DELIMITER $$
+CREATE PROCEDURE update_pedidos(
+	IN pIdPedido INT,
+	IN pDistancia DECIMAL(5,2), 
+	IN pPesoCarga DECIMAL(10,2),
+	IN pValorBaseKG DECIMAL(10,2), 
+	IN pValorBaseKM DECIMAL(10,2)
+ )
+BEGIN
+	DECLARE oldDistancia DECIMAL(5,2);
+    DECLARE oldPeso DECIMAL(10,2);
+    DECLARE oldValorKG DECIMAL(10,2);
+    DECLARE oldValorKM DECIMAL(10,2);
+    
+    SELECT distancia, peso_carga, valor_base_kg, valor_base_km
+    INTO oldDistancia, oldPeso, oldValorKG, oldValorKM
+    FROM pedidos
+    WHERE id_pedido = pIdPedido;
+	
+	IF oldDistancia = pDistancia
+       AND oldPeso = pPesoCarga
+       AND oldValorKG = pValorBaseKG
+       AND oldValorKM = pValorBaseKM THEN
+       
+       -- Seleciona 0 como o valor das linhas afetadas. Logo, não houve mudanças.
+        SELECT 0 AS linhas_afetadas;
+        
+	ELSE
+         UPDATE pedidos SET 
+            distancia = pDistancia,
+            peso_carga = pPesoCarga,
+            valor_base_kg = pValorBaseKG,
+            valor_base_km = pValorBaseKM 
+        WHERE id_pedido = pIdPedido;
+	-- Seleciona 1 como o valor das linhas afetadas. Logo, houve mudanças.
+    SELECT 1 AS linhas_afetadas;
+    END IF;
+END $$
+DELIMITER ;
+	
+DELIMITER $$
+CREATE TRIGGER trg_atualiza_entregas_after_update
+    AFTER UPDATE ON pedidos
+    FOR EACH ROW
+    BEGIN 
+		DECLARE pValorDistancia DECIMAL(10,2);
+		DECLARE pValorPeso DECIMAL(10,2);
+		DECLARE pValorBase DECIMAL(10,2);
+		DECLARE pValorAntesDesconto DECIMAL(10,2);
+		DECLARE pAcrescimo DECIMAL(10,2);
+		DECLARE pDesconto DECIMAL(10,2);
+		DECLARE pTaxaExtra DECIMAL(10,2);
+		DECLARE pValorFinal DECIMAL(10,2);
+        
+		IF NEW.distancia <> OLD.distancia
+        OR NEW.peso_carga <> OLD.peso_carga
+        OR NEW.valor_base_kg <> OLD.valor_base_kg
+        OR NEW.valor_base_km <> OLD.valor_base_km THEN
+        
+        SET pValorDistancia = calculo_valor_distancia(NEW.id_pedido);
+		SET pValorPeso = calculo_valor_peso(NEW.id_pedido);
+		SET pValorBase = calculo_valor_base(NEW.id_pedido);
+		SET pAcrescimo = calcular_acrescimo(NEW.id_pedido, pValorBase);
+		SET pTaxaExtra = calcular_taxa_peso(NEW.id_pedido);
+        
+		SET pValorAntesDesconto = pValorBase + pAcrescimo + pTaxaExtra;
+		SET pDesconto = calcular_desconto(pValorAntesDesconto);
+		SET pValorFinal = calculo_valor_final(pValorBase, pAcrescimo, pTaxaExtra, pDesconto);
+    
+			UPDATE entregas SET 
+            valor_distancia = pValorDistancia,
+            valor_peso = pValorPeso, 
+            valor_base = pValorBase, 
+            acrescimo = pAcrescimo, 
+            desconto = pDesconto, 
+            taxa_extra = pTaxaExtra, 
+            valor_final = pValorFinal WHERE fk_id_pedido = NEW.id_pedido;
+            END IF;
+            
+    END $$
+DELIMITER ;
+
+DELIMITER $$
+CREATE TRIGGER trg_cria_entregas_after_insert_pedidos
+    AFTER INSERT ON pedidos
+    FOR EACH ROW
+    BEGIN 
+		DECLARE pValorDistancia DECIMAL(10,2);
+		DECLARE pValorPeso DECIMAL(10,2);
+		DECLARE pValorBase DECIMAL(10,2);
+		DECLARE pValorAntesDesconto DECIMAL(10,2);
+		DECLARE pAcrescimo DECIMAL(10,2);
+		DECLARE pDesconto DECIMAL(10,2);
+		DECLARE pTaxaExtra DECIMAL(10,2);
+		DECLARE pValorFinal DECIMAL(10,2);
+        
+        SET pValorDistancia = calculo_valor_distancia(NEW.id_pedido);
+		SET pValorPeso = calculo_valor_peso(NEW.id_pedido);
+		SET pValorBase = calculo_valor_base(NEW.id_pedido);
+		SET pAcrescimo = calcular_acrescimo(NEW.id_pedido, pValorBase);
+		SET pTaxaExtra = calcular_taxa_peso(NEW.id_pedido);
+        
+		SET pValorAntesDesconto = pValorBase + pAcrescimo + pTaxaExtra;
+		SET pDesconto = calcular_desconto(pValorAntesDesconto);
+		SET pValorFinal = calculo_valor_final(pValorBase, pAcrescimo, pTaxaExtra, pDesconto);
+    
+			INSERT INTO entregas (fk_id_pedido, fk_id_status_entrega, valor_distancia, valor_peso, valor_base, acrescimo, desconto, taxa_extra, valor_final) 
+    VALUES (
+		NEW.id_pedido,
+		1,
+		pValorDistancia,
+		pValorPeso,
+		pValorBase, 
+        pAcrescimo,
+        pDesconto,
+        pTaxaExtra,
+        pValorFinal);
+    END $$
+DELIMITER ;
+
+CALL update_pedidos(4, 40, 90, 9, 6.90);
+SELECT * FROM pedidos;
+SELECT * FROM entregas;
+SELECT * FROM status_entregas;
+SHOW TABLES;
