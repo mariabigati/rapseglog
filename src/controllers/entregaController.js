@@ -2,58 +2,76 @@ const { entregaModel } = require('../models/entregaModel');
 const { pedidoModel } = require('../models/pedidoModel');
 const entregaController = {
 
+    /**
+     * Retorna as entregas cadastradas
+     * Rota GET /entregas
+     * @async
+     * @function selecionarEntregas
+     * @param {Request} req Objeto da requisição HTTP
+     * @param {Response} res Objeto da resposta HTTP
+     * @returns {Promise<Array<object} Objeto contendo o resultado da consulta.
+     */
     selecionarEntregas: async (req, res) => {
         try {
-            const {idEntrega} = req.query;
+            const { idEntrega } = req.query;
             if (idEntrega) {
-                const resultadoEntrega = await entregaModel. selectByIdView(idEntrega);
-                return res.status(200).json({data : resultadoEntrega});
+                const resultadoEntrega = await entregaModel.selectByIdView(idEntrega);
+                return res.status(200).json({ data: resultadoEntrega });
             }
             const resultado = await entregaModel.selectTodasEntregas();
 
             if (resultado.length === 0) {
                 return res.status(200).json({ message: 'Não foram encontrados resultados' });
             }
-            res.status(200).json({data: resultado});
+            res.status(200).json({ data: resultado });
         } catch (error) {
             console.error(error);
             res.status(500).json({ message: 'Ocorreu um erro no servidor.', errorMessage: error.message });
         }
     },
-
+     /**
+     * Cadastra novas entregas manualmente
+     * Rota POST /entregas
+     * @async
+     * @function cadastrarPedido
+     * @param {Request} req Objeto da requisição HTTP
+     * @param {Response} res Objeto da resposta HTTP
+     * @returns {Promise<object} Objeto contendo o resultado do insert.
+     */
     cadastraEntregas: async (req, res) => {
         try {
-            const {id_pedido, id_status_entrega} = req.body;
+            const { id_pedido, id_status_entrega } = req.body;
 
-            if (!id_pedido ||  !id_status_entrega) {
-                return res.status(400).json({ message: 'Há dados faltantes! Tente novamente.'});
+            if (!id_pedido || !id_status_entrega) {
+                return res.status(400).json({ message: 'Há dados faltantes! Tente novamente.' });
             }
 
             if (isNaN(id_pedido) || isNaN(id_status_entrega)) {
-                return res.status(400).json({ message: 'Há dados inválidos! Tente novamente.'});
+                return res.status(400).json({ message: 'Há dados inválidos! Tente novamente.' });
             }
             const pedidoSelecionado = await pedidoModel.selectPedidoPorId(id_pedido);
 
             if (pedidoSelecionado.length === 0) {
-                return res.status(200).json({message: 'Pedido não localizado na base de dados!'}) };
+                return res.status(200).json({ message: 'Pedido não localizado na base de dados!' })
+            };
 
             const entregaSelecionada = await entregaModel.selectByPedido(id_pedido);
 
             // se já houver uma entrega com esse pedido, e se o status não for 'cancelado'
             for (const entrega of entregaSelecionada) {
-            const statusEntrega = parseInt(entrega.fk_id_status_entrega, 10);
+                const statusEntrega = parseInt(entrega.fk_id_status_entrega, 10);
 
-            if (statusEntrega !== 4) {
-                return res.status(200).json({
-                    message: 'Já existe uma entrega ativa para este pedido. Não é permitido nova entrega até o cancelamento.'
-                });
-          
-             }
+                if (statusEntrega !== 4) {
+                    return res.status(200).json({
+                        message: 'Já existe uma entrega ativa para este pedido. Não é permitido nova entrega até o cancelamento.'
+                    });
+
+                }
             }
 
             const resultado = await entregaModel.insertEntrega(id_pedido, id_status_entrega);
             res.status(201).json({ message: 'Dados da entrega inseridos com sucesso!', data: resultado });
-            
+
             // if (resultado.affectedRows === 0) {
             //     return res.status(200).json({ message: 'Houve um erro ao inserir os dados da entrega no sistema. Tente novamente!' });
             // }
@@ -63,18 +81,26 @@ const entregaController = {
             res.status(500).json({ message: 'Ocorreu um erro no servidor.', errorMessage: error.message });
         }
     },
-
+    /**
+     * Realiza alterações no estado de uma entrega
+     * Rota PUT /entregas
+     * @async
+     * @function atualizaEstadoEntrega
+     * @param {Request} req Objeto da requisição HTTP
+     * @param {Response} res Objeto da resposta HTTP
+     * @returns {Promise<object} Objeto contendo o resultado da consulta.
+     */
     atualizaEstadoEntrega: async (req, res) => {
         try {
             const id_entrega = Number(req.params.idEntrega);
-            const {status_entrega} = req.body;
+            const { status_entrega } = req.body;
             let id_status_entrega;
-            if (!id_entrega |  !status_entrega) {
-                return res.status(400).json({ message: 'Há dados faltantes! Tente novamente.'});
+            if (!id_entrega | !status_entrega) {
+                return res.status(400).json({ message: 'Há dados faltantes! Tente novamente.' });
             }
 
             if (isNaN(id_entrega) || !isNaN(status_entrega)) {
-                return res.status(400).json({ message: 'Há dados inválidos! Tente novamente.'});
+                return res.status(400).json({ message: 'Há dados inválidos! Tente novamente.' });
             }
 
             const entregaAtual = await entregaModel.selectById(id_entrega);
@@ -83,18 +109,18 @@ const entregaController = {
                 return res.status(200).json({ message: 'Entrega não localizada' });
             }
 
-            if (status_entrega.toLowerCase() === "calculado"){
+            if (status_entrega.toLowerCase() === "calculado") {
                 id_status_entrega = 1;
             } else if (status_entrega.toLowerCase() === "em transito") {
                 id_status_entrega = 2;
-            }  else if (status_entrega.toLowerCase() === "entregue") {
+            } else if (status_entrega.toLowerCase() === "entregue") {
                 id_status_entrega = 3;
-            }  else if (status_entrega.toLowerCase() === "cancelado") {
+            } else if (status_entrega.toLowerCase() === "cancelado") {
                 id_status_entrega = 4;
             } else {
-                return res.status(400).json({ message: 'Este status é inválido! Por favor, digite o status calculado, em transito, entregue ou cancelado.'});
+                return res.status(400).json({ message: 'Este status é inválido! Por favor, digite o status calculado, em transito, entregue ou cancelado.' });
             }
-            
+
             const novoStatusEntrega = id_status_entrega ?? entregaAtual[0].fk_id_status_entrega;
 
             const resultado = await entregaModel.updateEstadoEntrega(id_entrega, novoStatusEntrega);
@@ -116,13 +142,21 @@ const entregaController = {
             res.status(500).json({ message: 'Ocorreu um erro no servidor.', errorMessage: error.message });
         }
     },
-
-    deletaEntrega: async (req, res) => {
+    /**
+     * Deleta entregas
+     * Rota DELETE /entregas
+     * @async
+     * @function deletarEntregas
+     * @param {Request} req Objeto da requisição HTTP
+     * @param {Response} res Objeto da resposta HTTP
+     * @returns {Promise<object} Objeto contendo o resultado da exclusão.
+     */
+    deletarEntregas: async (req, res) => {
         const id_entrega = Number(req.params.idEntrega);
         const entregaSelecionada = await entregaModel.selectById(id_entrega);
 
         if (entregaSelecionada.length === 0) {
-            return res.status(200).json({message: 'Entrega não localizada na base de dados!'});
+            return res.status(200).json({ message: 'Entrega não localizada na base de dados!' });
         }
 
         for (const entrega of entregaSelecionada) {
@@ -132,14 +166,14 @@ const entregaController = {
                 return res.status(400).json({
                     message: 'Essa entrega está ativa. Por favor, cancele a entrega para deletá-la.'
                 })
-            } 
-
-            if (entregaSelecionada.length > 0) {
-            const resultado = await entregaModel.deleteEntrega(id_entrega);
-            res.status(201).json({ message: 'Entrega deletada com sucesso!', data: resultado });    
             }
 
-            
+            if (entregaSelecionada.length > 0) {
+                const resultado = await entregaModel.deleteEntrega(id_entrega);
+                res.status(201).json({ message: 'Entrega deletada com sucesso!', data: resultado });
+            }
+
+
 
         }
 

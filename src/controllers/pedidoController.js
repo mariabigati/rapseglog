@@ -18,44 +18,44 @@ const pedidoController = {
             if (idPedido && idCliente && idTipoEntrega) {
                 return res.status(200).json({ message: 'Por favor, envie apenas um id, ou se deseja buscar pedidos de um cliente com um tipo específico, envie ID do cliente e do tipo de entrega.' });
             }
-          
+
             if (idCliente && idTipoEntrega) {
                 const resultadoPedido = await pedidoModel.selectPedidoPorClienteTipo(idCliente, idTipoEntrega);
-                if ( resultadoPedido.length === 0 ) {
+                if (resultadoPedido.length === 0) {
                     return res.status(200).json({ message: 'Não foram encontrados resultados' });
                 } else {
                     return res.status(200).json({ data: resultadoPedido });
-                }  
-                
+                };
+
             }
             if (idPedido) {
                 const resultadoPedido = await pedidoModel.selectPedidoPorId(idPedido);
-                if ( resultadoPedido.length === 0 ) {
+                if (resultadoPedido.length === 0) {
                     return res.status(200).json({ message: 'Não foram encontrados resultados' });
                 } else {
                     return res.status(200).json({ data: resultadoPedido });
-                }  
+                }
             }
 
             if (idCliente) {
                 const resultadoPedidoCliente = await pedidoModel.selectPedidosPorCliente(idCliente);
-                if (resultadoPedidoCliente.length === 0 ) {
+                if (resultadoPedidoCliente.length === 0) {
                     return res.status(200).json({ message: 'Não foram encontrados resultados' });
                 } else {
                     return res.status(200).json({ data: resultadoPedidoCliente });
-                }  
-                
-            }
+                };
+
+            };
 
             if (idTipoEntrega) {
                 const resultadoPedidoTipo = await pedidoModel.selectPedidosPorTipo(idTipoEntrega);
-                if (resultadoPedidoTipo.length === 0 ) {
+                if (resultadoPedidoTipo.length === 0) {
                     return res.status(200).json({ message: 'Não foram encontrados resultados' });
                 } else {
                     return res.status(200).json({ data: resultadoPedidoTipo });
-                }  
-                
-            }
+                };
+
+            };
 
             const resultado = await pedidoModel.selectTodosPedidos();
             if (resultado.length === 0) {
@@ -84,7 +84,7 @@ const pedidoController = {
             if (!id_cliente || !data_pedido || !id_tipo_entrega) {
                 return res.status(400).json({ message: 'Há dados faltantes! Tente novamente.' });
             }
-            
+
             if (distancia === 0 || peso_carga === 0 || valor_base_kg === 0 || valor_base_km === 0) {
                 return res.status(400).json({ message: 'Valores não podem ser 0! Tente novamente.' });
             }
@@ -95,7 +95,7 @@ const pedidoController = {
 
         } catch (error) {
             console.error(error);
-            return res.status(500).json({ message: 'Ocorreu um erro no servidor.', errorMessage: error.message })
+            return res.status(500).json({ message: 'Ocorreu um erro no servidor.', errorMessage: error.message });
         }
     },
     /**
@@ -156,7 +156,7 @@ const pedidoController = {
             return res.status(500).json({ message: 'Ocorreu um erro no servidor.', errorMessage: error.message })
         }
     },
-    
+
     /**
      * Deleta pedidos
      * Rota DELETE /pedidos
@@ -172,9 +172,9 @@ const pedidoController = {
         const pedidoSelecionado = await pedidoModel.selectPedidoPorId(idPedido);
         const entregaSelecionada = await entregaModel.selectByPedido(idPedido);
 
-        if(pedidoSelecionado.length === 0) {
-                return res.status(200).json({message: 'Pedido não localizado na base de dados!'})
-        }
+        if (pedidoSelecionado.length === 0) {
+            return res.status(200).json({ message: 'Pedido não localizado na base de dados!' });
+        };
 
         for (const entrega of entregaSelecionada) {
             const statusEntrega = parseInt(entrega.fk_id_status_entrega, 10);
@@ -182,18 +182,19 @@ const pedidoController = {
             if (statusEntrega !== 4) {
                 return res.status(400).json({
                     message: 'Esse pedido possui uma entrega ativa. Por favor, cancele a entrega para deletar o pedido.'
-                })
-            } 
-          
-        }
-         if (entregaSelecionada.length > 0) {
-              await entregaModel.deleteEntregasByPedido(idPedido);    
-            }
+                });
+            };
 
-            const resultado = await pedidoModel.deletePedido(idPedido);
-            res.status(201).json({ message: 'Pedido deletado com sucesso.', data: resultado });
-        }
-        
+        };
+
+        if (entregaSelecionada.length > 0) {
+            await entregaModel.deleteEntregasByPedido(idPedido);
+        };
+
+        const resultado = await pedidoModel.deletePedido(idPedido);
+        res.status(201).json({ message: 'Pedido deletado com sucesso.', data: resultado });
     }
+
+}
 
 module.exports = { pedidoController };
