@@ -1,23 +1,51 @@
+const { entregaModel } = require('../models/entregaModel');
 const { pedidoModel } = require('../models/pedidoModel');
 const pedidoController = {
     selecionarPedidos: async (req, res) => {
         try {
-            const { idPedido, idCliente } = req.query;
+            const { idPedido, idCliente, idTipoEntrega } = req.query;
 
-            if (idPedido && idCliente) {
+            if (idPedido && idCliente && idTipoEntrega) {
                 return res.status(200).json({ message: 'Por favor, envie apenas um id!' });
             }
-
+          
+            if (idCliente && idTipoEntrega) {
+                const resultadoPedido = await pedidoModel.selectPedidoPorClienteTipo(idCliente, idTipoEntrega);
+                if ( resultadoPedido.length === 0 ) {
+                    return res.status(200).json({ message: 'Não foram encontrados resultados' });
+                } else {
+                    return res.status(200).json({ data: resultadoPedido });
+                }  
+                
+            }
             if (idPedido) {
                 const resultadoPedido = await pedidoModel.selectPedidoPorId(idPedido);
-                return res.status(200).json({ data: resultadoPedido });
+                if ( resultadoPedido.length === 0 ) {
+                    return res.status(200).json({ message: 'Não foram encontrados resultados' });
+                } else {
+                    return res.status(200).json({ data: resultadoPedido });
+                }  
             }
 
             if (idCliente) {
                 const resultadoPedidoCliente = await pedidoModel.selectPedidosPorCliente(idCliente);
-                return res.status(200).json({ data: resultadoPedidoCliente });
+                if (resultadoPedidoCliente.length === 0 ) {
+                    return res.status(200).json({ message: 'Não foram encontrados resultados' });
+                } else {
+                    return res.status(200).json({ data: resultadoPedidoCliente });
+                }  
+                
             }
 
+            if (idTipoEntrega) {
+                const resultadoPedidoTipo = await pedidoModel.selectPedidosPorTipo(idTipoEntrega);
+                if (resultadoPedidoTipo.length === 0 ) {
+                    return res.status(200).json({ message: 'Não foram encontrados resultados' });
+                } else {
+                    return res.status(200).json({ data: resultadoPedidoTipo });
+                }  
+                
+            }
 
             const resultado = await pedidoModel.selectTodosPedidos();
             if (resultado.length === 0) {
@@ -39,7 +67,7 @@ const pedidoController = {
                 return res.status(400).json({ message: 'Há dados faltantes! Tente novamente.' });
             }
             
-            if (distancia === 0 || peso === 0 || valor_kg === 0 || valor_km === 0) {
+            if (distancia === 0 || peso_carga === 0 || valor_base_kg === 0 || valor_base_km === 0) {
                 return res.status(400).json({ message: 'Valores não podem ser 0! Tente novamente.' });
             }
 
@@ -60,12 +88,16 @@ const pedidoController = {
 
             const { distancia, peso, valor_kg, valor_km } = req.body;
 
-            if (!idPedido || (!distancia && !peso && !valor_kg && !valor_km) || isNaN(distancia) || isNaN(peso) || isNaN(valor_kg) || isNaN(valor_km) || typeof idPedido != 'number') {
-                return res.status(400).json({ message: 'Verifique os dados enviados e tente novamente.' });
+            if (!idPedido || typeof idPedido != 'number') {
+                return res.status(400).json({ message: 'Verifique o ID enviado e tente novamente.' });
             }
 
-            if (distancia === 0 || peso === 0 || valor_kg === 0 || valor_km === 0) {
-                return res.status(400).json({ message: 'Valores não podem ser 0! Tente novamente.' });
+            if (distancia === undefined && peso === undefined && valor_kg === undefined && valor_km === undefined) {
+                return res.status(400).json({ message: 'Nenhum campo para atualização foi fornecido.' });
+            }
+
+            if (distancia === 0 || peso === 0 || valor_kg === 0 || valor_km === 0 || isNaN(distancia) || isNaN(peso) || isNaN(valor_kg) || isNaN(valor_km)) {
+                return res.status(400).json({ message: 'Valores inválidos! Tente novamente.' });
             }
 
             const pedidoAtual = await pedidoModel.selectPedidoPorId(idPedido);
@@ -97,7 +129,36 @@ const pedidoController = {
             console.error(error);
             return res.status(500).json({ message: 'Ocorreu um erro no servidor.', errorMessage: error.message })
         }
+    },
+    
+    deletarPedido: async (req, res) => {
+        const idPedido = Number(req.params.idPedido);
+
+        const pedidoSelecionado = await pedidoModel.selectPedidoPorId(idPedido);
+        const entregaSelecionada = await entregaModel.selectByPedido(idPedido);
+
+        if(pedidoSelecionado.length === 0) {
+                return res.status(200).json({message: 'Pedido não localizado na base de dados!'})
+        }
+
+        for (const entrega of entregaSelecionada) {
+            const statusEntrega = parseInt(entrega.fk_id_status_entrega, 10);
+
+            if (statusEntrega !== 4) {
+                return res.status(400).json({
+                    message: 'Esse pedido possui uma entrega ativa. Por favor, cancele a entrega para deletar o pedido.'
+                })
+            } 
+          
+        }
+         if (entregaSelecionada.length > 0) {
+              await entregaModel.deleteEntregasByPedido(idPedido);    
+            }
+
+            const resultado = await pedidoModel.deletePedido(idPedido);
+            res.status(201).json({ message: 'Pedido deletado com sucesso.', data: resultado });
+        }
+        
     }
-}
 
 module.exports = { pedidoController };

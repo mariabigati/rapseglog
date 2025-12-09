@@ -62,7 +62,7 @@ CREATE TABLE IF NOT EXISTS entregas (
     valor_distancia DECIMAL(10,2) NOT NULL,
     valor_peso DECIMAL (10,2) NOT NULL,
     valor_base DECIMAL (10,2) NOT NULL,
-    acresimo DECIMAL(10,2),
+    acrescimo DECIMAL(10,2),
     desconto DECIMAL(10,2), 
     taxa_extra DECIMAL(10,2),
     valor_final DECIMAL (10,2) NOT NULL,
@@ -118,23 +118,51 @@ BEGIN
 END $$
 DELIMITER ;
 
+-- CADASTRO DE ENTREGAS COM OS CÁLCULOS BASE
 DELIMITER $$
-CREATE PROCEDURE cadastrar_nova_entrega (
-	IN pIdPedido INT,
-	IN pIdStatus INT,
-	IN pValorDistancia DECIMAL(10,2),
-	IN pValorPeso DECIMAL(10,2),
-	IN pValorBase DECIMAL(10,2), 
-    IN pAcresimo DECIMAL(10,2),
-    IN pDesconto DECIMAL(10,2),
-    IN pTaxaExtra DECIMAL(10,2),
-	IN pValorFinal DECIMAL(10,2)
- )
+CREATE PROCEDURE cadastrar_nova_entrega(IN pIdPedido INT, IN pIdStatus INT)
 BEGIN
-	INSERT INTO entregas (fk_id_pedido, fk_id_status_entrega, valor_distancia, valor_peso, valor_base, acresimo, desconto, taxa_extra, valor_final) 
-    VALUES (pIdPedido, pIdStatus, pValorDistancia, pValorPeso, pValorBase, pAcresimo, pDesconto, pTaxaExtra, pValorFinal);
+	DECLARE pValorDistancia DECIMAL(10,2);
+    DECLARE pValorPeso DECIMAL(10,2);
+    DECLARE pValorBase DECIMAL(10,2);
+    DECLARE pValorFinalTemp DECIMAL(10,2);
+    DECLARE pAcrescimo DECIMAL(10,2);
+    DECLARE pDesconto DECIMAL(10,2);
+    DECLARE pTaxaExtra DECIMAL(10,2);
+    DECLARE pValorFinal DECIMAL(10,2);
+    
+    SET pValorDistancia = calculo_valor_distancia(pIdPedido);
+    SET pValorPeso = calculo_valor_peso(pIdPedido);
+    SET pValorBase = calculo_valor_base(pIdPedido);
+	SET pAcrescimo = calcular_acrescimo(pIdPedido, pValorBase);
+    SET pTaxaExtra = calcular_taxa_peso(pIdPedido);
+    SET pValorFinalTemp = pValorBase + pAcrescimo + pTaxaExtra;
+    SET pDesconto = calcular_desconto(pValorFinalTemp);
+    SET pValorFinal = calculo_valor_final(pValorBase, pAcrescimo, pTaxaExtra, pDesconto);
+    
+	INSERT INTO entregas (fk_id_pedido, fk_id_status_entrega, valor_distancia, valor_peso, valor_base, acrescimo, desconto, taxa_extra, valor_final) 
+    VALUES (
+		pIdPedido,
+		pIdStatus,
+		pValorDistancia,
+		pValorPeso,
+		pValorBase, 
+        pAcrescimo,
+        pDesconto,
+        pTaxaExtra,
+        pValorFinal);
 END $$
 DELIMITER ;
+
+DELIMITER $$
+CREATE PROCEDURE update_estado_entrega(IN pIdEntrega INT, IN pIdStatus INT)
+BEGIN 
+	UPDATE entregas SET fk_id_status_entrega = pIdStatus WHERE id_entrega = pIdEntrega;
+END $$
+DELIMITER ;
+CALL update_estado_entrega(31, 4);
+SELECT * FROM entregas;
+DELETE FROM entregas;
 
 -- FUNÇÕES PARA CÁLCULOS DE VALORES FINAIS
 
@@ -169,90 +197,8 @@ DELIMITER $$
     END $$
 DELIMITER ;
 
--- PROCEDURES PARA ACRÉSIMOS, DESCONTOS E TAXAS
--- FK.ID : 2 (Tipo de Entrega URGENTE, deixar o acrésimo como 20% do valor base (0,2))
 
-DELIMITER $$ 
-CREATE PROCEDURE adicionar_acresimo(IN pIdPedido INT, pValorBase DECIMAL(10,2))
-	BEGIN
-		UPDATE entregas as e
-        JOIN pedidos as p ON p.id_pedido = e.fk_id_pedido
-		SET e.acresimo = (e.valor_base * 0.2) WHERE p.fk_id_tipo_entrega = 2 AND fk_id_pedido = pIdPedido;
-        
-        UPDATE entregas as e
-        JOIN pedidos as p ON p.id_pedido = e.fk_id_pedido
-		SET e.acresimo = 0 WHERE p.fk_id_tipo_entrega = 1 AND fk_id_pedido = pIdPedido;
-	END $$
-DELIMITER ;
-
-CALL adicionar_acresimo(); -- funcionando!
-
--- DESCONTO DE 10% (0,1)
-DELIMITER $$ 
-CREATE PROCEDURE aplicar_desconto(IN pIdPedido INT)
-	BEGIN
-		UPDATE entregas AS e
-		SET e.desconto = (e.valor_final * 0.1) WHERE e.valor_final > 500 AND fk_id_pedido = pIdPedido;
-        
-		UPDATE entregas
-        SET valor_final = valor_final - desconto WHERE fk_id_pedido = pIdPedido;
-	END $$
-DELIMITER ;
-CALL aplicar_desconto(1); -- Funcionando!
-SELECT * FROM entregas;
-
--- TAXA DE R$15,00
-DELIMITER $$ 
-CREATE PROCEDURE aplicar_taxa_peso(IN pIdPedido INT)
-	BEGIN
-		UPDATE entregas AS e
-        JOIN pedidos AS p ON e.fk_id_pedido = p.id_pedido
-		SET e.taxa_extra = 15 WHERE p.peso_carga > 50 AND fk_id_pedido = pIdPedido;
-        
-        UPDATE entregas AS e
-        JOIN pedidos AS p ON e.fk_id_pedido = p.id_pedido
-		SET e.taxa_extra = 0 WHERE p.peso_carga < 50 AND fk_id_pedido = pIdPedido;
-	END $$
-DELIMITER ;
-
-CALL aplicar_taxa_peso();
-
--- CADASTRO DE ENTREGAS COM OS CÁLCULOS BASE
-DELIMITER $$
-CREATE PROCEDURE cadastrar_nova_entrega_teste(IN pIdPedido INT, IN pIdStatus INT)
-BEGIN
-	DECLARE pValorDistancia DECIMAL(10,2);
-    DECLARE pValorPeso DECIMAL(10,2);
-    DECLARE pValorBase DECIMAL(10,2);
-    DECLARE pValorFinal DECIMAL(10,2);
-    
-    SET pValorDistancia = calculo_valor_distancia(pIdPedido);
-    SET pValorPeso = calculo_valor_peso(pIdPedido);
-    SET pValorBase = calculo_valor_base(pIdPedido);
-
-	INSERT INTO entregas (fk_id_pedido, fk_id_status_entrega, valor_distancia, valor_peso, valor_base, valor_final) 
-    VALUES (
-		pIdPedido,
-		pIdStatus,
-		pValorDistancia,
-		pValorPeso,
-		pValorBase, 
-        pValorBase);
-END $$
-DELIMITER ;
-
-DELIMITER $$
-CREATE TRIGGER aplicar_valores_extras AFTER INSERT
-ON entregas
-FOR EACH ROW
-BEGIN 
-	CALL 
-END $$
-DELIMITER ;
-CALL cadastrar_nova_entrega_teste(2, 1);
-SELECT * FROM entregas;
 -- FUNÇÕES PARA CÁLCULOS DE VALORES FINAIS COM SELECT PARA CONSEGUIR OS DADOS "AUTOMÁTICAMENTE"
-
 -- VALOR DO PESO
 DELIMITER $$
 	CREATE FUNCTION calculo_valor_peso(pIdPedido INT)
@@ -296,13 +242,80 @@ DELIMITER $$
     END $$
 DELIMITER ;
 
-SELECT calculo_valor_base(1);
 
 DELIMITER $$
-	CREATE FUNCTION calculo_valor_final(pIdPedido INT, pAcresimo DECIMAL(10,2), pTaxa DECIMAL(10,2))
+	CREATE FUNCTION calculo_valor_final(pValorFinal DECIMAL(10,2), calculo_valor_distanciapAcrescimo DECIMAL(10,2), pTaxa DECIMAL(10,2), pDesconto DECIMAL(10,2))
 	RETURNS DECIMAL(10,2)
 	DETERMINISTIC 
 	BEGIN
-		RETURN calculo_valor_base(pIdPedido) + pAcresimo + pTaxa;
+		RETURN pValorFinal + pAcrescimo + pTaxa - pDesconto;
     END $$
 DELIMITER ;
+
+DELIMITER $$ 
+CREATE FUNCTION calcular_acrescimo(pIdPedido INT, pValorBase DECIMAL(10,2))
+	RETURNS DECIMAL(10,2)
+    DETERMINISTIC
+	BEGIN
+		DECLARE pIdTipo INT;
+        DECLARE acrescimo DECIMAL(10,2);
+        SELECT fk_id_tipo_entrega INTO pIdTipo FROM pedidos WHERE id_pedido = pIdPedido;
+        IF pIdTipo = 2 THEN
+			SET acrescimo = pValorBase * 0.2;	
+        ELSE 
+			SET acrescimo = 0;
+        END IF;
+		RETURN acrescimo;
+	END $$
+DELIMITER ;
+
+-- DESCONTO DE 10% (0,1)
+DELIMITER $$ 
+CREATE FUNCTION calcular_desconto(pValorFinal DECIMAL(10,2))
+	RETURNS DECIMAL(10,2)
+	DETERMINISTIC
+	BEGIN
+		DECLARE pDesconto DECIMAL(10,2);
+		IF pValorFinal > 500 THEN
+			SET pDesconto = pValorFinal * 0.1;
+		ELSE
+			SET pDesconto = 0;
+		END IF;
+		RETURN pDesconto;
+	END $$
+DELIMITER ;
+
+-- TAXA DE R$15,00
+DELIMITER $$ 
+CREATE FUNCTION calcular_taxa_peso(pIdPedido INT)
+RETURNS DECIMAL(10,2)
+DETERMINISTIC
+	BEGIN
+		DECLARE pPesoCarga DECIMAL(7,3);
+        DECLARE pTaxaPeso DECIMAL(10,2);
+        SELECT peso_carga INTO pPesoCarga FROM pedidos WHERE id_pedido = pIdPedido;
+		IF pPesoCarga > 50 THEN
+			SET pTaxaPeso = 15;
+		ELSE 
+			SET pTaxaPeso = 0;
+		END IF;
+		RETURN pTaxaPeso;
+	END $$
+DELIMITER ;
+
+CREATE VIEW vw_entregas AS 
+SELECT 
+	c.nome_cliente, 
+	se.status_entrega, 
+	te.tipo_entrega,
+	e.valor_distancia,
+	e.valor_peso, 
+	e.valor_base,
+	e.acrescimo, 
+	e.desconto, 
+	e.taxa_extra, 
+	e.valor_final FROM clientes as c
+    JOIN pedidos ON
+SHOW TABLES;
+
+SELECT * FROM entregas;
