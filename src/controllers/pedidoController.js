@@ -1,12 +1,22 @@
 const { entregaModel } = require('../models/entregaModel');
 const { pedidoModel } = require('../models/pedidoModel');
+
 const pedidoController = {
+    /**
+     * Retorna os pedidos cadastrados
+     * Rota GET /pedidos
+     * @async
+     * @function selecionarPedidos
+     * @param {Request} req Objeto da requisição HTTP
+     * @param {Response} res Objeto da resposta HTTP
+     * @returns {Promise<Array<object} Objeto contendo o resultado da consulta.
+     */
     selecionarPedidos: async (req, res) => {
         try {
             const { idPedido, idCliente, idTipoEntrega } = req.query;
 
             if (idPedido && idCliente && idTipoEntrega) {
-                return res.status(200).json({ message: 'Por favor, envie apenas um id!' });
+                return res.status(200).json({ message: 'Por favor, envie apenas um id, ou se deseja buscar pedidos de um cliente com um tipo específico, envie ID do cliente e do tipo de entrega.' });
             }
           
             if (idCliente && idTipoEntrega) {
@@ -57,7 +67,15 @@ const pedidoController = {
             res.status(500).json({ message: 'Ocorreu um erro no servidor.', errorMessage: error.message });
         }
     },
-
+    /**
+     * Cadastra novos pedidos
+     * Rota POST /pedidos
+     * @async
+     * @function cadastrarPedido
+     * @param {Request} req Objeto da requisição HTTP
+     * @param {Response} res Objeto da resposta HTTP
+     * @returns {Promise<object} Objeto contendo o resultado do insert.
+     */
     cadastrarPedido: async (req, res) => {
         try {
             const { data_pedido, id_cliente,
@@ -80,7 +98,15 @@ const pedidoController = {
             return res.status(500).json({ message: 'Ocorreu um erro no servidor.', errorMessage: error.message })
         }
     },
-
+    /**
+     * Realiza alterações em um pedido
+     * Rota PUT /pedidos
+     * @async
+     * @function alteraPedido
+     * @param {Request} req Objeto da requisição HTTP
+     * @param {Response} res Objeto da resposta HTTP
+     * @returns {Promise<object} Objeto contendo o resultado da consulta.
+     */
     alteraPedido: async (req, res) => {
         try {
 
@@ -131,6 +157,15 @@ const pedidoController = {
         }
     },
     
+    /**
+     * Deleta pedidos
+     * Rota DELETE /pedidos
+     * @async
+     * @function deletarPedido
+     * @param {Request} req Objeto da requisição HTTP
+     * @param {Response} res Objeto da resposta HTTP
+     * @returns {Promise<object} Objeto contendo o resultado da exclusão.
+     */
     deletarPedido: async (req, res) => {
         const idPedido = Number(req.params.idPedido);
 

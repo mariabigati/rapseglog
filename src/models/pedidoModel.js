@@ -1,12 +1,24 @@
 const { pool } = require('../config/db');
 
 const pedidoModel = {
+   /**
+     * @async
+     * @function selectTodosPedidos
+     * Seleciona todos os pedidos presentes na base de dados
+     * @returns {Promise<Array<object} Retorna um array de objetos, onde cada objeto representa uma entrega.
+     */ 
     selectTodosPedidos: async () => {
         const sql = 'SELECT * FROM pedidos;'
         const [rows] = await pool.query(sql);
         return rows;
     },
-
+    /**
+     * @async
+     * @function selectPedidoPorId
+     *Seleciona um pedido na base de dados com base em seu ID.
+     * @param {number} pIdPedido Identificador do pedido que será selecionada. EX: 1
+     * @returns {Promise<object} Retorna um objeto contendo as propriedades sobre o resultado da execução da Query.
+     */
     selectPedidoPorId: async (pIdPedido) => {
         const sql = 'SELECT * FROM pedidos WHERE id_pedido = ?;';
         const values = [pIdPedido];

@@ -55,17 +55,21 @@ collection:
         meta:
           id: req_0cfd05b1ccb445248c1601ee3f5e9a4e
           created: 1764338359067
-          modified: 1764938981016
+          modified: 1765280559795
           isPrivate: false
           description: ""
           sortKey: -1764338346912
         method: GET
         parameters:
           - name: idPedido
-            value: "1"
+            value: ""
             description: ""
             disabled: false
           - name: idCliente
+            value: ""
+            description: ""
+            disabled: false
+          - name: idTipoEntrega
             value: ""
             description: ""
             disabled: false
@@ -82,12 +86,12 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: localhost:8000/pedidos/1
+      - url: localhost:8000/pedidos/5
         name: Atualizar Pedido
         meta:
           id: req_ce0c888a9a234642a327e99136a9b265
           created: 1764938795050
-          modified: 1764943390197
+          modified: 1765280864949
           isPrivate: false
           description: ""
           sortKey: -1764338347012
@@ -97,13 +101,36 @@ collection:
           text: |-
             {
             	"distancia" : 4 , 
-            	"peso" : 0,
-            	"valor_kg" : 1,
+            	"peso" : 1,
+            	"valor_kg" : 5,
             	"valor_km" : 60
             }
         headers:
           - name: Content-Type
             value: application/json
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/pedidos/3
+        name: Deletar Pedido
+        meta:
+          id: req_80c385927966406d828382ed937dc0f6
+          created: 1765202481844
+          modified: 1765277273568
+          isPrivate: false
+          description: ""
+          sortKey: -1764338347112
+        method: DELETE
+        headers:
           - name: User-Agent
             value: insomnia/12.1.0
             description: ""
@@ -129,14 +156,14 @@ collection:
         meta:
           id: req_daf06ab08d114327a88c6a9487b2c9a0
           created: 1764339456790
-          modified: 1764933554360
+          modified: 1765279646908
           isPrivate: false
           description: ""
           sortKey: -1764339459476
         method: GET
         parameters:
           - name: idEntrega
-            value: ""
+            value: "67"
             description: ""
             disabled: false
         headers:
@@ -153,11 +180,11 @@ collection:
             store: true
           rebuildPath: true
       - url: localhost:8000/entregas
-        name: Adicionar Entrega
+        name: Adicionar Entrega Manual
         meta:
           id: req_eb6b9b2ffdc5423c8f93632430209afc
           created: 1764339466227
-          modified: 1764933542431
+          modified: 1765278417454
           isPrivate: false
           description: ""
           sortKey: -1764339459376
@@ -166,8 +193,8 @@ collection:
           mimeType: application/json
           text: |-
             {
-            	"id_pedido" : 2, 
-            	"id_status_entrega" : 4
+            	"id_pedido" : 4, 
+            	"id_status_entrega" : 2
             }
         headers:
           - name: Content-Type
@@ -184,12 +211,12 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: localhost:8000/entregas/40
+      - url: localhost:8000/entregas/66
         name: Atualizar estado da entrega
         meta:
           id: req_70b7d2e04bad46c8b23bb4b9042086ee
           created: 1764856447213
-          modified: 1764932935214
+          modified: 1765278940945
           isPrivate: false
           description: ""
           sortKey: -1764339459576
@@ -203,6 +230,29 @@ collection:
         headers:
           - name: Content-Type
             value: application/json
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/entregas/66
+        name: Deletar Entrega
+        meta:
+          id: req_bc67d6059acb46f0a755b5ee53716087
+          created: 1765278338860
+          modified: 1765278965030
+          isPrivate: false
+          description: ""
+          sortKey: -1764339459676
+        method: DELETE
+        headers:
           - name: User-Agent
             value: insomnia/12.1.0
             description: ""
