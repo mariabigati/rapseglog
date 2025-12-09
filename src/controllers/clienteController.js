@@ -1,17 +1,65 @@
 const { clienteModel } = require("../models/clienteModel");
 
 const clienteController = {
+  /**
+   * Retorna os clientes cadastrados
+   * Rota GET /clientes
+   * @async
+   * @function selecionaTodos
+   * @param {Request} req Objeto da requisição HTTP
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Array<Object>>} Objeto contendo o resultado da consulta
+   */
   //selecionaTodos funciona para selecionar todos os clientes por parametro ou cliente unico por ID com query 
   selecionaTodos: async (req, res) => {
     try {
       const { idCliente } = req.query; // faz com que seja possível procurar cliente por ID na query
+      const { cpf } = req.query;
+      const { email } = req.query;
+
+      let contador = 0;
+      if (idCliente) {
+        contador++;
+      }
+      if (cpf) {
+        contador++;
+      }
+      if (email) {
+        contador++;
+      }
+
+      // validação para caso o usuário deseje usar mais de uma query como parametro
+      if (contador > 1) {
+        return res.status(400).json({
+          message: "Use apenas UM parâmetro por vez (idCliente, cpf ou email), por favor."
+        });
+      }
 
       if (idCliente) { // caso tenha o ID na query, usa função de selecionar por ID
         const cliente = await clienteModel.selectById(idCliente);
+        if (!cliente || cliente.length === 0) {
+          return res.status(404).json({ message: "Cliente não encontrado pelo ID informado." });
+        } 
         return res.status(200).json({ data: cliente });
       }
 
-      // caso não tenha ID pela query, usa função de selecionar todos
+      if ( cpf ) { // caso tenha o CPF na query, usa função de selecionar por CPF
+        const cliente = await clienteModel.selectByCPF(cpf);
+        if (!cliente || cliente.length === 0) {
+          return res.status(404).json({ message: "Cliente não encontrado pelo CPF informado." });
+        }
+        return res.status(200).json({ data: cliente });
+      }
+
+      if ( email ) { // caso tenha o EMAIL na query, usa função de selecionar por EMAIL
+        const cliente = await clienteModel.selectByEmail(email);
+        if (!cliente || cliente.length === 0) {
+          return res.status(404).json({ message: "Cliente não encontrado pelo Email informado." });
+        }
+        return res.status(200).json({ data: cliente });
+      }
+
+      // caso não tenha nada pela query, usa função de selecionar todos
       const resultado = await clienteModel.selectAll();
       if (resultado.length === 0) {
         return res.status(200).json({ message: "A consulta não retornou resultados" });
@@ -21,6 +69,33 @@ const clienteController = {
       console.error(error);
       res.status(500).json({ message: "Erro no servidor" });
     }
+  },
+
+  /**
+   * Retorna os clientes cadastrados
+   * Rota GET /clientes
+   * @async
+   * @function calculaMaioridade
+   * @param {Request} req Objeto da requisição HTTP
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Array<Object>>} Objeto contendo o resultado da consulta
+   */
+  calculaMaioridade: async (dataNasc) => {
+    const hoje = new Date();
+    const nascimento = new Date(dataNasc);
+
+    if (isNaN(nascimento)) {
+      return false;
+    }
+
+    let idade = hoje.getFullYear() - nascimento.getFullYear();
+    const mes = hoje.getMonth() - nascimento.getMonth();
+
+    if (mes < 0 || (mes === 0 && hoje.getDate() < nascimento.getDate())) {
+      idade--;
+    }
+
+    return idade >= 18;
   },
 
   incluiCliente: async (req, res) => {
@@ -56,12 +131,21 @@ const clienteController = {
       if (isNaN(Date.parse(dataNasc))) {
         return res.status(400).json({ message: "Data de nascimento inválida." });
       }
+      // valida se é maior de idade
+      if (!(await clienteController.calculaMaioridade(dataNasc))) {
+        return res.status(400).json({ message: "Cliente deve ter 18 anos ou mais." });
+      }
 
       // nas seguintes validações, caso procure o cpf ou email já exista vai retornar a row dele, ou seja > 1 é pq já existe!
       // validacao para CPF único
       const existeCPF = await clienteModel.verificaCpf(cpf);
       if (existeCPF.length > 0) {
         return res.status(409).json({ message: "Este CPF já está cadastrado." });
+      }
+      // Telefone não duplicado
+      const existe = await clienteModel.verificaTelefone(telefone);
+      if (existe.length > 0) {
+        return res.status(409).json({ message: "Este telefone já está cadastrado." });
       }
       // validacao para EMAIL único
       const existeEMAIL = await clienteModel.verificaEmail(email);
@@ -90,7 +174,7 @@ const clienteController = {
       }
 
       // conexão com a procedure de inserir clientes
-      await clienteModel.insertCliente(nome, cpf, email, dataNasc);
+      const resultadoInsert = await clienteModel.insertCliente(nome, cpf, email, dataNasc);
 
       // cria uma constante para puxar e salvar o id do cliente que está sendo inserido
       // assim conseguimos salvar como fk em endereços e telefones
@@ -110,19 +194,23 @@ const clienteController = {
 
       // insere o telefone do cliente com a procedure
       if (telefone) {
-        await clienteModel.insertTelefone(idCliente, telefone);
+        const resultadoTelefone = await clienteModel.insertTelefone(idCliente, telefone);
+        console.log(resultadoTelefone);
       }
 
       // insere o endereco do cliente com procedure caso o numero e cep sejam válidos
       if (cep && numero) {
-        await clienteModel.insertEndereco(estado, cidade, bairro, logradouro, numero, cep, idCliente);
+        const resultadoEndereco = await clienteModel.insertEndereco(estado, cidade, bairro, logradouro, numero, cep, idCliente);
+        console.log(resultadoEndereco);
       }
 
+      console.log(resultadoInsert);
       // quando cadastrado com sucesso, o cliente vai retornar no insomnia o id do cliente e o endereço para visualização
       return res.status(201).json({
         message: "Cliente cadastrado com sucesso!",
         idCliente,
-        endereco: {estado, cidade, bairro, logradouro, numero, cep},
+        telefone,
+        endereco: {estado, cidade, bairro, logradouro, numero, cep}
       });
     } catch (error) {
       console.error(error);
@@ -202,6 +290,11 @@ const clienteController = {
         return res.status(400).json({ message: "Data de nascimento inválida." });
       }
 
+      // valida se é maior de idade
+      if (!(await clienteController.calculaMaioridade(dataNasc))) {
+        return res.status(400).json({ message: "Cliente deve ter 18 anos ou mais." });
+      }
+      
       let novoNome = atual.nome_cliente;
       let novoCpf = atual.cpf_cliente;
       let novoEmail = atual.email_cliente;
@@ -432,6 +525,15 @@ const clienteController = {
       if (cliente.length === 0)
         return res.status(404).json({ message: "Cliente não encontrado." });
 
+      // verifica duplicado
+      const enderecoExistente = await clienteModel.verificaEndereco(idCliente, cep, numero);
+
+      if (enderecoExistente.length > 0) {
+        return res.status(400).json({
+          message: "Este endereço já está cadastrado para este cliente."
+        });
+      }
+
       // consulta CEP
       let estado, cidade, bairro, logradouro;
       try {
@@ -536,7 +638,7 @@ const clienteController = {
       if (!idTelefone || isNaN(idTelefone))
         return res.status(400).json({ message: "ID do telefone inválido." });
 
-      const telefones = await clienteModel.selectTelefonesByCliente(idCliente);
+      const telefones = await clienteModel.selectTelefoneByCliente(idCliente);
 
       if (telefones.length === 0)
         return res.status(404).json({ message: "Nenhum telefone encontrado." });
