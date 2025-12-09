@@ -29,15 +29,15 @@ const entregaController = {
             res.status(500).json({ message: 'Ocorreu um erro no servidor.', errorMessage: error.message });
         }
     },
-     /**
-     * Cadastra novas entregas manualmente
-     * Rota POST /entregas
-     * @async
-     * @function cadastrarPedido
-     * @param {Request} req Objeto da requisição HTTP
-     * @param {Response} res Objeto da resposta HTTP
-     * @returns {Promise<object} Objeto contendo o resultado do insert.
-     */
+    /**
+    * Cadastra novas entregas manualmente
+    * Rota POST /entregas
+    * @async
+    * @function cadastrarPedido
+    * @param {Request} req Objeto da requisição HTTP
+    * @param {Response} res Objeto da resposta HTTP
+    * @returns {Promise<object} Objeto contendo o resultado do insert.
+    */
     cadastraEntregas: async (req, res) => {
         try {
             const { id_pedido, id_status_entrega } = req.body;
@@ -71,10 +71,6 @@ const entregaController = {
 
             const resultado = await entregaModel.insertEntrega(id_pedido, id_status_entrega);
             res.status(201).json({ message: 'Dados da entrega inseridos com sucesso!', data: resultado });
-
-            // if (resultado.affectedRows === 0) {
-            //     return res.status(200).json({ message: 'Houve um erro ao inserir os dados da entrega no sistema. Tente novamente!' });
-            // }
 
         } catch (error) {
             console.error(error);
@@ -111,7 +107,7 @@ const entregaController = {
 
             if (status_entrega.toLowerCase() === "calculado") {
                 id_status_entrega = 1;
-            } else if (status_entrega.toLowerCase() === "em transito") {
+            } else if (status_entrega.toLowerCase() === "em trânsito") {
                 id_status_entrega = 2;
             } else if (status_entrega.toLowerCase() === "entregue") {
                 id_status_entrega = 3;
@@ -172,8 +168,6 @@ const entregaController = {
                 const resultado = await entregaModel.deleteEntrega(id_entrega);
                 res.status(201).json({ message: 'Entrega deletada com sucesso!', data: resultado });
             }
-
-
 
         }
 
