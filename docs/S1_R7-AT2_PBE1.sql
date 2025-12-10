@@ -31,7 +31,7 @@ CREATE TABLE IF NOT EXISTS status_entregas(
 CREATE TABLE IF NOT EXISTS telefones (
     id_telefone INT PRIMARY KEY AUTO_INCREMENT NOT NULL,
     fk_id_cliente INT NOT NULL,
-    telefone VARCHAR(12) NOT NULL,
+    telefone CHAR(11) NOT NULL,
     FOREIGN KEY (fk_id_cliente) REFERENCES clientes (id_cliente)
 );
 
@@ -199,8 +199,6 @@ DETERMINISTIC
     END $$
 DELIMITER ;
 
-
-
  -- PROCEDURES PARA CADASTROS
  DELIMITER $$
     CREATE PROCEDURE cadastrar_endereco(IN pEstado VARCHAR(45), IN pBairro VARCHAR(45), IN pLogradouro VARCHAR(45), IN pNumero INT, IN pCep CHAR(9), IN pIdCliente INT)
@@ -210,16 +208,100 @@ DELIMITER ;
     END $$
 DELIMITER ;
 
-
-DELIMITER $$
-    CREATE PROCEDURE cadastrar_telefone(IN pId_Cliente INT,
-    pTelefone VARCHAR(12))
-    BEGIN
-        INSERT INTO telefones (fk_id_cliente, telefone)
-        VALUES (pId_Cliente, pTelefone);
-    END
 DELIMITER ;
 
+    CREATE PROCEDURE cadastrar_telefone(IN pId_Cliente INT,
+    pTelefone CHAR(11))
+    BEGIN
+        INSERT INTO telefones (fk_id_cliente, telefone) 
+        VALUES (pId_Cliente, pTelefone);
+    END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE PROCEDURE cadastrar_novo_cliente(IN pNomeCliente VARCHAR(100), IN pCpfCliente CHAR(11), IN pEmailCliente VARCHAR(100), IN pDataNasc DATE)
+	BEGIN
+		INSERT INTO clientes (nome_cliente, cpf_cliente, email_cliente, data_nasc, idade)
+		VALUES (pNomeCliente, pCpfCliente, pEmailCliente, pDataNasc, calculo_idade(pDataNasc));
+END $$
+DELIMITER ;
+
+DELIMITER $$
+    CREATE FUNCTION calculo_idade(data_nasc DATE)
+    RETURNS INT
+    DETERMINISTIC 
+    BEGIN
+        RETURN TIMESTAMPDIFF(YEAR, data_nasc, CURDATE());
+    END $$
+DELIMITER ;
+
+CREATE EVENT atualizar_idade
+    ON SCHEDULE EVERY 1 DAY
+    DO
+    UPDATE clientes SET idade = calculo_idade(data_nasc);
+    
+DELIMITER $$
+	CREATE TRIGGER trg_atualiza_idade_after_update
+    AFTER UPDATE
+    ON clientes
+    FOR EACH ROW
+		BEGIN
+			UPDATE clientes SET idade = calculo_idade(data_nasc); 
+		END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE PROCEDURE excluir_cliente (IN pId_cliente INT)
+	BEGIN
+		DELETE FROM telefones WHERE fk_id_cliente = pId_Cliente;
+		DELETE FROM enderecos WHERE fk_id_cliente = pId_cliente;
+		DELETE FROM clientes WHERE id_cliente = pId_cliente;
+	END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE PROCEDURE excluir_telefone(IN pId_Cliente INT)
+	BEGIN
+		DELETE FROM telefones WHERE fk_id_cliente = pId_Cliente;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE PROCEDURE excluir_endereco(IN pId_Cliente INT)
+	BEGIN
+		DELETE FROM enderecos WHERE fk_id_cliente = pId_Cliente;
+END $$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE PROCEDURE atualizar_cliente(IN pId_Cliente INT, IN pNomeCliente VARCHAR(100), IN pCpfCliente CHAR(11), IN pEmailCliente VARCHAR(100), IN pDataNasc DATE)
+	BEGIN
+		UPDATE clientes
+		SET nome_cliente = pNomeCliente, cpf_cliente = pCpfCliente,
+        email_cliente = pEmailCliente, data_nascimento = pDataNasc
+		WHERE id_cliente = pId_Cliente;
+	END$$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE PROCEDURE atualizar_endereco(IN pId_Cliente INT, IN pCep CHAR(8), IN pNumero INT, IN pEstado VARCHAR(45), IN pCidade VARCHAR(45), IN pBairro VARCHAR(45), IN pLogradouro VARCHAR(45))
+	BEGIN
+		UPDATE enderecos
+		SET cep = pCep, numero = pNumero,
+        estado = pEstado, cidade = pCidade, 
+        bairro = pBairro, logradouro = pLogradouro
+		WHERE fk_id_cliente = pId_Cliente;
+	END$$
+DELIMITER ;
+
+DELIMITER $$
+	CREATE PROCEDURE atualizar_telefone(IN pId_Cliente INT, IN pTelefone char(11))
+	BEGIN
+		UPDATE telefones
+		SET telefone = pTelefone
+		WHERE fk_id_cliente = pId_Cliente;
+	END$$
+DELIMITER ;
 
 DELIMITER $$
     CREATE PROCEDURE cadastrar_novo_cliente(IN pNomeCliente VARCHAR(100),
