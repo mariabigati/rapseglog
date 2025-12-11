@@ -146,7 +146,7 @@ const entregaController = {
 
             if (status_entrega.toLowerCase() === "calculado") {
                 id_status_entrega = 1;
-            } else if (status_entrega.toLowerCase() === "em transito") {
+            } else if (status_entrega.toLowerCase() === "em transito" || status_entrega.toLowerCase() === "em trânsito") {
                 id_status_entrega = 2;
             } else if (status_entrega.toLowerCase() === "entregue") {
                 id_status_entrega = 3;

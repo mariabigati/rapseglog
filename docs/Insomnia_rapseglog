@@ -7,6 +7,194 @@ meta:
   modified: 1764337449738
   description: ""
 collection:
+  - name: Clientes
+    meta:
+      id: fld_8ddfad24eadd49e0af3f73bbc9a6fccf
+      created: 1764329783951
+      modified: 1764934539788
+      sortKey: -1764329783951
+      description: ""
+    children:
+      - url: http://localhost:8000/clientes/incluir
+        name: INSERIR
+        meta:
+          id: req_460fc1d30fba4a9b838ec68c049dcd1a
+          created: 1764329796344
+          modified: 1764939774942
+          isPrivate: false
+          description: ""
+          sortKey: -1764337836845
+        method: POST
+        body:
+          mimeType: application/json
+          text: |
+            {
+              "nome": "TesteFINAL",
+              "cpf": "99988877765",
+              "email": "teste_final@gmail.com",
+              "dataNasc": "2000-12-01",
+              "telefone": "19988765544",
+              "numero": 7,
+              "cep": "13170023"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.0.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8000/clientes
+        name: SELECT
+        meta:
+          id: req_7b0a8a717fd9412f83d428641c436d06
+          created: 1764337872873
+          modified: 1764935024199
+          isPrivate: false
+          description: ""
+          sortKey: -1764337836945
+        method: GET
+        parameters:
+          - name: idCliente
+            value: ""
+            description: ""
+            disabled: false
+        headers:
+          - name: User-Agent
+            value: insomnia/12.0.0
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/clientes/excluir/24
+        name: DELETE
+        meta:
+          id: req_f9b32af7a7734bcb82425ae6343d4e9a
+          created: 1764685247489
+          modified: 1764851868864
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837045
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/clientes/atualizarCli/22
+        name: UPDATE CLIENTE
+        meta:
+          id: req_7180d84644834b5ca47471875938d62c
+          created: 1764851851077
+          modified: 1764937021580
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837145
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |
+            {
+            	"nome": "Vivian",
+            	"cpf": "55555555521",
+            	"email": "vivian@gmail.com"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/clientes/atualizarEnd/23
+        name: UPDATE ENDERECO
+        meta:
+          id: req_7767379a988f482faa5f4ab53254fddb
+          created: 1764934524923
+          modified: 1764938026693
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837245
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"cep": "13188092",
+            	"numero": 55
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/clientes/atualizarTel/25
+        name: UPDATE TELEFONE
+        meta:
+          id: req_f4f2516e68e6401eb267efeed20e3175
+          created: 1764934540782
+          modified: 1764942904791
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837345
+        method: PUT
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"telefone": "19988111111"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
   - name: Pedidos
     meta:
       id: fld_ff5dcee52fda427c8474f5f22ddaef2c
@@ -16,11 +204,11 @@ collection:
       description: ""
     children:
       - url: localhost:8000/pedidos
-        name: Adicionar Pedido
+        name: INSERT
         meta:
           id: req_9ee99be9d4db4a5a8e17029227b4cb72
           created: 1764337466105
-          modified: 1764855427075
+          modified: 1765450268950
           isPrivate: false
           description: ""
           sortKey: -1764338346812
@@ -51,11 +239,11 @@ collection:
             store: true
           rebuildPath: true
       - url: localhost:8000/pedidos
-        name: Selecionar Pedidos
+        name: SELECT
         meta:
           id: req_0cfd05b1ccb445248c1601ee3f5e9a4e
           created: 1764338359067
-          modified: 1765280559795
+          modified: 1765450239120
           isPrivate: false
           description: ""
           sortKey: -1764338346912
@@ -86,12 +274,12 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: localhost:8000/pedidos/5
-        name: Atualizar Pedido
+      - url: localhost:8000/pedidos/1
+        name: UPDATE
         meta:
           id: req_ce0c888a9a234642a327e99136a9b265
           created: 1764938795050
-          modified: 1765280864949
+          modified: 1765450394511
           isPrivate: false
           description: ""
           sortKey: -1764338347012
@@ -100,10 +288,11 @@ collection:
           mimeType: application/json
           text: |-
             {
-            	"distancia" : 4 , 
+            	"distancia" : 4, 
             	"peso" : 1,
-            	"valor_kg" : 5,
-            	"valor_km" : 60
+            	"valor_kg" : 2,
+            	"valor_km" : 20
+            	
             }
         headers:
           - name: Content-Type
@@ -120,12 +309,12 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: localhost:8000/pedidos/3
-        name: Deletar Pedido
+      - url: localhost:8000/pedidos/5
+        name: DELETE
         meta:
           id: req_80c385927966406d828382ed937dc0f6
           created: 1765202481844
-          modified: 1765277273568
+          modified: 1765450249185
           isPrivate: false
           description: ""
           sortKey: -1764338347112
@@ -152,18 +341,18 @@ collection:
       description: ""
     children:
       - url: localhost:8000/entregas
-        name: Selecionar Entregas
+        name: SELECT
         meta:
           id: req_daf06ab08d114327a88c6a9487b2c9a0
           created: 1764339456790
-          modified: 1765279646908
+          modified: 1765450290703
           isPrivate: false
           description: ""
           sortKey: -1764339459476
         method: GET
         parameters:
           - name: idEntrega
-            value: "67"
+            value: ""
             description: ""
             disabled: false
         headers:
@@ -180,11 +369,11 @@ collection:
             store: true
           rebuildPath: true
       - url: localhost:8000/entregas
-        name: Adicionar Entrega Manual
+        name: INSERT MANUAL
         meta:
           id: req_eb6b9b2ffdc5423c8f93632430209afc
           created: 1764339466227
-          modified: 1765278417454
+          modified: 1765450280077
           isPrivate: false
           description: ""
           sortKey: -1764339459376
@@ -193,8 +382,8 @@ collection:
           mimeType: application/json
           text: |-
             {
-            	"id_pedido" : 4, 
-            	"id_status_entrega" : 2
+            	"id_pedido" : 6, 
+            	"id_status_entrega" : 1
             }
         headers:
           - name: Content-Type
@@ -211,12 +400,12 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: localhost:8000/entregas/66
-        name: Atualizar estado da entrega
+      - url: localhost:8000/entregas/71
+        name: UPDATE ESTADO
         meta:
           id: req_70b7d2e04bad46c8b23bb4b9042086ee
           created: 1764856447213
-          modified: 1765278940945
+          modified: 1765450765967
           isPrivate: false
           description: ""
           sortKey: -1764339459576
@@ -242,12 +431,12 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: localhost:8000/entregas/66
-        name: Deletar Entrega
+      - url: localhost:8000/entregas/68
+        name: DELETE
         meta:
           id: req_bc67d6059acb46f0a755b5ee53716087
           created: 1765278338860
-          modified: 1765278965030
+          modified: 1765450306290
           isPrivate: false
           description: ""
           sortKey: -1764339459676
