@@ -9,7 +9,7 @@ meta:
 collection:
   - name: Clientes
     meta:
-      id: fld_8ddfad24eadd49e0af3f73bbc9a6fccf
+      id: fld_81d27e018a3941f19a962e237c6a3dcb
       created: 1764329783951
       modified: 1764934539788
       sortKey: -1764329783951
@@ -18,23 +18,23 @@ collection:
       - url: http://localhost:8000/clientes/incluir
         name: INSERIR
         meta:
-          id: req_460fc1d30fba4a9b838ec68c049dcd1a
+          id: req_2f3b8ab96d8b474485feb7df7e315615
           created: 1764329796344
-          modified: 1764939774942
+          modified: 1765287181613
           isPrivate: false
           description: ""
-          sortKey: -1764337836845
+          sortKey: -1764337837545
         method: POST
         body:
           mimeType: application/json
           text: |
             {
-              "nome": "TesteFINAL",
-              "cpf": "99988877765",
-              "email": "teste_final@gmail.com",
-              "dataNasc": "2000-12-01",
-              "telefone": "19988765544",
-              "numero": 7,
+              "nome": "Chris",
+              "cpf": "64844444791",
+              "email": "ChrYYYs@gmail.com",
+              "dataNasc": "2006-07-11",
+              "telefone": "19888779791",
+              "numero": 10,
               "cep": "13170023"
             }
         headers:
@@ -53,15 +53,23 @@ collection:
       - url: http://localhost:8000/clientes
         name: SELECT
         meta:
-          id: req_7b0a8a717fd9412f83d428641c436d06
+          id: req_9d53018a0dd6490eaede404d184debcc
           created: 1764337872873
-          modified: 1764935024199
+          modified: 1765283348032
           isPrivate: false
           description: ""
-          sortKey: -1764337836945
+          sortKey: -1764337837029.375
         method: GET
         parameters:
           - name: idCliente
+            value: ""
+            description: ""
+            disabled: false
+          - name: cpf
+            value: ""
+            description: ""
+            disabled: false
+          - name: email
             value: ""
             description: ""
             disabled: false
@@ -76,15 +84,15 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: localhost:8000/clientes/excluir/24
+      - url: localhost:8000/clientes/excluir/2
         name: DELETE
         meta:
-          id: req_f9b32af7a7734bcb82425ae6343d4e9a
+          id: req_bcf1112c0d5449c19b84c8707913fd59
           created: 1764685247489
-          modified: 1764851868864
+          modified: 1765453081595
           isPrivate: false
           description: ""
-          sortKey: -1764337837045
+          sortKey: -1764337837232.5
         method: DELETE
         headers:
           - name: User-Agent
@@ -99,23 +107,24 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: localhost:8000/clientes/atualizarCli/22
+      - url: localhost:8000/clientes/atualizarCli/1
         name: UPDATE CLIENTE
         meta:
-          id: req_7180d84644834b5ca47471875938d62c
+          id: req_fbb4cd932c204b6ba6047c113ce42589
           created: 1764851851077
-          modified: 1764937021580
+          modified: 1765453023658
           isPrivate: false
           description: ""
-          sortKey: -1764337837145
+          sortKey: -1764337837382.5
         method: PUT
         body:
           mimeType: application/json
           text: |
             {
-            	"nome": "Vivian",
-            	"cpf": "55555555521",
-            	"email": "vivian@gmail.com"
+            	"nome": "Vivi",
+            	"cpf": "55555555551",
+            	"email": "vivis@gmail.com",
+            	"dataNasc": "2005-06-16"
             }
         headers:
           - name: Content-Type
@@ -132,22 +141,22 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: localhost:8000/clientes/atualizarEnd/23
+      - url: localhost:8000/clientes/atualizarEnd/1/1
         name: UPDATE ENDERECO
         meta:
-          id: req_7767379a988f482faa5f4ab53254fddb
+          id: req_b026544b65d14ea198ee4078ca9066a9
           created: 1764934524923
-          modified: 1764938026693
+          modified: 1765453063472
           isPrivate: false
           description: ""
-          sortKey: -1764337837245
+          sortKey: -1764337837370
         method: PUT
         body:
           mimeType: application/json
           text: |-
             {
             	"cep": "13188092",
-            	"numero": 55
+            	"numero": 123
             }
         headers:
           - name: Content-Type
@@ -164,12 +173,12 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: localhost:8000/clientes/atualizarTel/25
+      - url: localhost:8000/clientes/atualizarTel/1/1
         name: UPDATE TELEFONE
         meta:
-          id: req_f4f2516e68e6401eb267efeed20e3175
+          id: req_68b82c0b030e4f56a3b05449621fc353
           created: 1764934540782
-          modified: 1764942904791
+          modified: 1765453074460
           isPrivate: false
           description: ""
           sortKey: -1764337837345
@@ -178,11 +187,120 @@ collection:
           mimeType: application/json
           text: |-
             {
-            	"telefone": "19988111111"
+            	"telefone": "19988222222"
             }
         headers:
           - name: Content-Type
             value: application/json
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8000/clientes/incluirTelExtra/1
+        name: INSERIR TELEFONE
+        meta:
+          id: req_9f820bca04c9446ab9d890f7a00193cb
+          created: 1765199313695
+          modified: 1765278723048
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837395
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"telefone": "19988999792"
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/clientes/excluirEnd/1/2
+        name: DELETE ENDERECO
+        meta:
+          id: req_c37c6ef17b2842ca989c6d815a0914f5
+          created: 1765199319310
+          modified: 1765453091619
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837120
+        method: DELETE
+        headers:
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: http://localhost:8000/clientes/incluirEndExtra/1
+        name: INSERIR ENDERECO
+        meta:
+          id: req_7c7e473899ca4b2692a625320a16274a
+          created: 1765199323113
+          modified: 1765453009185
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837445
+        method: POST
+        body:
+          mimeType: application/json
+          text: |-
+            {
+            	"cep": "13188092",
+            	"numero": 1
+            }
+        headers:
+          - name: Content-Type
+            value: application/json
+          - name: User-Agent
+            value: insomnia/12.1.0
+            description: ""
+            disabled: false
+        settings:
+          renderRequestBody: true
+          encodeUrl: true
+          followRedirects: global
+          cookies:
+            send: true
+            store: true
+          rebuildPath: true
+      - url: localhost:8000/clientes/excluirTel/1/1
+        name: DELETE TELEFONE
+        meta:
+          id: req_61ecbb5c54814b309e439541451872ad
+          created: 1765199326409
+          modified: 1765453103217
+          isPrivate: false
+          description: ""
+          sortKey: -1764337837113.75
+        method: DELETE
+        headers:
           - name: User-Agent
             value: insomnia/12.1.0
             description: ""
@@ -208,7 +326,7 @@ collection:
         meta:
           id: req_9ee99be9d4db4a5a8e17029227b4cb72
           created: 1764337466105
-          modified: 1765450268950
+          modified: 1765453297408
           isPrivate: false
           description: ""
           sortKey: -1764338346812
@@ -218,7 +336,7 @@ collection:
           text: |-
             {
             	"data_pedido" : "2020-01-12",
-            	"id_cliente": 1,
+            	"id_cliente": 2,
             	"id_tipo_entrega" : 2,
             	"distancia" : 70,
             	"peso_carga" : 100,
@@ -274,12 +392,12 @@ collection:
             send: true
             store: true
           rebuildPath: true
-      - url: localhost:8000/pedidos/1
+      - url: localhost:8000/pedidos/2
         name: UPDATE
         meta:
           id: req_ce0c888a9a234642a327e99136a9b265
           created: 1764938795050
-          modified: 1765450394511
+          modified: 1765453313231
           isPrivate: false
           description: ""
           sortKey: -1764338347012
