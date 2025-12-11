@@ -32,7 +32,7 @@ CREATE TABLE `clientes` (
   PRIMARY KEY (`id_cliente`),
   UNIQUE KEY `cpf_cliente` (`cpf_cliente`),
   UNIQUE KEY `email_cliente` (`email_cliente`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -41,7 +41,7 @@ CREATE TABLE `clientes` (
 
 LOCK TABLES `clientes` WRITE;
 /*!40000 ALTER TABLE `clientes` DISABLE KEYS */;
-INSERT INTO `clientes` VALUES (1,'Fulano de Tal','11111111111','fulano@email.com','2000-01-01',25);
+INSERT INTO `clientes` VALUES (2,'Vivi','55555555551','vivis@gmail.com','2005-06-16',25),(3,'Chris','64844444791','ChrYYYs@gmail.com','2006-07-11',19);
 /*!40000 ALTER TABLE `clientes` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -64,7 +64,7 @@ CREATE TABLE `enderecos` (
   PRIMARY KEY (`id_endereco`),
   KEY `fk_id_cliente` (`fk_id_cliente`),
   CONSTRAINT `enderecos_ibfk_1` FOREIGN KEY (`fk_id_cliente`) REFERENCES `clientes` (`id_cliente`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -73,6 +73,7 @@ CREATE TABLE `enderecos` (
 
 LOCK TABLES `enderecos` WRITE;
 /*!40000 ALTER TABLE `enderecos` DISABLE KEYS */;
+INSERT INTO `enderecos` VALUES (1,2,'SP','Sumaré','Centro','Avenida Rebouças',7,'13170023'),(2,3,'SP','Hortolândia','Jardim Amanda I','Rua Assis Brasil',123,'13188092'),(3,3,'SP','Hortolândia','Jardim Amanda I','Rua Assis Brasil',1,'13188092');
 /*!40000 ALTER TABLE `enderecos` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -99,7 +100,7 @@ CREATE TABLE `entregas` (
   KEY `fk_id_pedido` (`fk_id_pedido`),
   CONSTRAINT `entregas_ibfk_1` FOREIGN KEY (`fk_id_status_entrega`) REFERENCES `status_entregas` (`id_status_entrega`),
   CONSTRAINT `entregas_ibfk_2` FOREIGN KEY (`fk_id_pedido`) REFERENCES `pedidos` (`id_pedido`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -108,6 +109,7 @@ CREATE TABLE `entregas` (
 
 LOCK TABLES `entregas` WRITE;
 /*!40000 ALTER TABLE `entregas` DISABLE KEYS */;
+INSERT INTO `entregas` VALUES (1,2,1,413.00,490.00,903.00,180.60,109.86,15.00,988.74),(2,3,1,413.00,490.00,903.00,180.60,109.86,15.00,988.74);
 /*!40000 ALTER TABLE `entregas` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -132,7 +134,7 @@ CREATE TABLE `pedidos` (
   KEY `fk_id_tipo_entrega` (`fk_id_tipo_entrega`),
   CONSTRAINT `pedidos_ibfk_1` FOREIGN KEY (`fk_id_cliente`) REFERENCES `clientes` (`id_cliente`),
   CONSTRAINT `pedidos_ibfk_2` FOREIGN KEY (`fk_id_tipo_entrega`) REFERENCES `tipo_entregas` (`id_tipo_entrega`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -141,6 +143,7 @@ CREATE TABLE `pedidos` (
 
 LOCK TABLES `pedidos` WRITE;
 /*!40000 ALTER TABLE `pedidos` DISABLE KEYS */;
+INSERT INTO `pedidos` VALUES (2,2,2,'2020-01-12',70.00,100.000,4.90,5.90),(3,2,2,'2020-01-12',70.00,100.000,4.90,5.90);
 /*!40000 ALTER TABLE `pedidos` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!50003 SET @saved_cs_client      = @@character_set_client */ ;
@@ -295,7 +298,7 @@ CREATE TABLE `telefones` (
   PRIMARY KEY (`id_telefone`),
   KEY `fk_id_cliente` (`fk_id_cliente`),
   CONSTRAINT `telefones_ibfk_1` FOREIGN KEY (`fk_id_cliente`) REFERENCES `clientes` (`id_cliente`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -304,6 +307,7 @@ CREATE TABLE `telefones` (
 
 LOCK TABLES `telefones` WRITE;
 /*!40000 ALTER TABLE `telefones` DISABLE KEYS */;
+INSERT INTO `telefones` VALUES (1,2,'19988765544'),(2,3,'19888779791'),(3,3,'19988999792');
 /*!40000 ALTER TABLE `telefones` ENABLE KEYS */;
 UNLOCK TABLES;
 
@@ -381,4 +385,4 @@ SET character_set_client = @saved_cs_client;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2025-12-11  8:29:07
+-- Dump completed on 2025-12-11  8:48:17
