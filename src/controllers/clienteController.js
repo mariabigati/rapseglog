@@ -2,13 +2,14 @@ const { clienteModel } = require("../models/clienteModel");
 
 const clienteController = {
   /**
-   * Retorna os clientes cadastrados
+   * Retorna os clientes cadastrados (todos ou filtrados).
    * Rota GET /clientes
+   * Aceita query params: ?idCliente, ?cpf, ?email
    * @async
    * @function selecionaTodos
    * @param {Request} req Objeto da requisição HTTP
    * @param {Response} res Objeto da resposta HTTP
-   * @returns {Promise<Array<Object>>} Objeto contendo o resultado da consulta
+   * @returns {Promise<Object>} JSON com o resultado da consulta
    */
   //selecionaTodos funciona para selecionar todos os clientes por parametro ou cliente unico por ID com query 
   selecionaTodos: async (req, res) => {
@@ -72,13 +73,11 @@ const clienteController = {
   },
 
   /**
-   * Retorna os clientes cadastrados
-   * Rota GET /clientes
+   * Função auxiliar que verifica se a data de nascimento indica maioridade (>= 18 anos).
    * @async
    * @function calculaMaioridade
-   * @param {Request} req Objeto da requisição HTTP
-   * @param {Response} res Objeto da resposta HTTP
-   * @returns {Promise<Array<Object>>} Objeto contendo o resultado da consulta
+   * @param {string|Date} dataNasc A data de nascimento do cliente
+   * @returns {Promise<boolean>} Retorna true se for maior de 18, false caso contrário ou erro
    */
   calculaMaioridade: async (dataNasc) => {
     const hoje = new Date();
@@ -98,6 +97,15 @@ const clienteController = {
     return idade >= 18;
   },
 
+  /**
+   * Cadastra um novo cliente, incluindo validações de CPF, e-mail e inserção de endereço/telefone.
+   * Rota POST /clientes/incluir
+   * @async
+   * @function incluiCliente
+   * @param {Request} req Objeto da requisição HTTP (Body: nome, cpf, email, dataNasc, telefone, numero, cep)
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Object>} JSON com confirmação do cadastro e dados criados
+   */
   incluiCliente: async (req, res) => {
     try {
       let {nome, cpf, email, dataNasc,telefone, numero, cep} = req.body;
@@ -218,6 +226,15 @@ const clienteController = {
     }
   },
 
+  /**
+   * Remove um cliente do banco de dados pelo ID, verificando antes se possui pedidos.
+   * Rota DELETE /clientes/excluir/:idCliente
+   * @async
+   * @function excluiCliente
+   * @param {Request} req Objeto da requisição HTTP
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Object>} JSON com mensagem de sucesso ou erro
+   */
   excluiCliente: async (req, res) => {
     try {
       const idCliente = Number(req.params.idCliente);
@@ -251,7 +268,15 @@ const clienteController = {
     }
   },
 
-
+  /**
+   * Atualiza os dados pessoais (nome, CPF, email, dataNasc) de um cliente existente.
+   * Rota PUT /clientes/atualizarCli/:idCliente
+   * @async
+   * @function atualizarCliente
+   * @param {Request} req Objeto da requisição HTTP
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Object>} JSON com as alterações realizadas
+   */
   atualizarCliente: async (req, res) => {
     try {
       const idCliente = Number(req.params.idCliente);
@@ -359,7 +384,15 @@ const clienteController = {
     }
   },
 
-
+  /**
+   * Atualiza os dados de endereço de um cliente (CEP, Número), consultando o ViaCEP se necessário.
+   * Rota PUT /clientes/atualizarEnd/:idCliente/:idEndereco
+   * @async
+   * @function atualizarEndereco
+   * @param {Request} req Objeto da requisição HTTP
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Object>} JSON confirmando a atualização do endereço
+   */
   atualizarEndereco: async (req, res) => {
     try {
       const idCliente = Number(req.params.idCliente);
@@ -450,7 +483,15 @@ const clienteController = {
     }
   },
 
-
+  /**
+   * Atualiza o número de telefone principal de um cliente.
+   * Rota PUT /clientes/atualizarTel/:idCliente/:idTelefone
+   * @async
+   * @function atualizarTelefone
+   * @param {Request} req Objeto da requisição HTTP
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Object>} JSON confirmando a atualização do telefone
+   */
   atualizarTelefone: async (req, res) => {
     try {
       const idCliente = Number(req.params.idCliente);
@@ -506,6 +547,15 @@ const clienteController = {
     }
   },
 
+  /**
+   * Adiciona um novo endereço para um cliente já existente.
+   * Rota POST /clientes/incluirEndExtra/:idCliente
+   * @async
+   * @function cadastrarEnderecoExtra
+   * @param {Request} req Objeto da requisição HTTP
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Object>} JSON com confirmação do cadastro do novo endereço
+   */
   cadastrarEnderecoExtra: async (req, res) => {
     try {
       const idCliente = Number(req.params.idCliente);
@@ -561,6 +611,15 @@ const clienteController = {
     }
   },
 
+  /**
+   * Remove um endereço específico de um cliente, impedindo a exclusão se for o único endereço.
+   * Rota DELETE /clientes/excluirEnd/:idCliente/:idEndereco
+   * @async
+   * @function deletarEndereco
+   * @param {Request} req Objeto da requisição HTTP
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Object>} JSON com mensagem de sucesso
+   */
   deletarEndereco: async (req, res) => {
     try {
       const idCliente = Number(req.params.idCliente);
@@ -596,6 +655,15 @@ const clienteController = {
     }
   },
 
+  /**
+   * Adiciona um número de telefone extra para um cliente.
+   * Rota POST /clientes/incluirTelExtra/:idCliente
+   * @async
+   * @function cadastrarTelefoneExtra
+   * @param {Request} req Objeto da requisição HTTP
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Object>} JSON com confirmação do cadastro
+   */
   cadastrarTelefoneExtra: async (req, res) => {
     try {
       const idCliente = Number(req.params.idCliente);
@@ -627,6 +695,15 @@ const clienteController = {
     }
   },
 
+  /**
+   * Remove um telefone específico de um cliente, impedindo a exclusão se for o único telefone.
+   * Rota DELETE /clientes/excluirTel/:idCliente/:idTelefone
+   * @async
+   * @function deletarTelefone
+   * @param {Request} req Objeto da requisição HTTP
+   * @param {Response} res Objeto da resposta HTTP
+   * @returns {Promise<Object>} JSON com mensagem de sucesso
+   */
   deletarTelefone: async (req, res) => {
     try {
       const idCliente = Number(req.params.idCliente);
