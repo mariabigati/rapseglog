@@ -200,16 +200,15 @@ DETERMINISTIC
 DELIMITER ;
 
  -- PROCEDURES PARA CADASTROS
- DELIMITER $$
-    CREATE PROCEDURE cadastrar_endereco(IN pEstado VARCHAR(45), IN pBairro VARCHAR(45), IN pLogradouro VARCHAR(45), IN pNumero INT, IN pCep CHAR(9), IN pIdCliente INT)
+DELIMITER $$
+    CREATE PROCEDURE cadastrar_endereco(IN pEstado VARCHAR(45), IN pCidade VARCHAR(45), IN pBairro VARCHAR(45), IN pLogradouro VARCHAR(45), IN pNumero INT, IN pCep CHAR(9), IN pIdCliente INT)
     BEGIN
-        INSERT INTO enderecos (estado, cidade, bairro, logradouro, numero, cep, fk_id_cliente) VALUES
-        (pEstado, pBairro, pLogradouro, pNumero, pCep, pIdCliente);
+        INSERT INTO enderecos (estado, cidade, bairro, logradouro, numero, cep, fk_id_cliente) VALUES 
+        (pEstado, pCidade, pBairro, pLogradouro, pNumero, pCep, pIdCliente);
     END $$
 DELIMITER ;
 
-DELIMITER ;
-
+DELIMITER $$
     CREATE PROCEDURE cadastrar_telefone(IN pId_Cliente INT,
     pTelefone CHAR(11))
     BEGIN
@@ -239,16 +238,6 @@ CREATE EVENT atualizar_idade
     ON SCHEDULE EVERY 1 DAY
     DO
     UPDATE clientes SET idade = calculo_idade(data_nasc);
-    
-DELIMITER $$
-	CREATE TRIGGER trg_atualiza_idade_after_update
-    AFTER UPDATE
-    ON clientes
-    FOR EACH ROW
-		BEGIN
-			UPDATE clientes SET idade = calculo_idade(data_nasc); 
-		END $$
-DELIMITER ;
 
 DELIMITER $$
 	CREATE PROCEDURE excluir_cliente (IN pId_cliente INT)
@@ -278,39 +267,27 @@ DELIMITER $$
 	BEGIN
 		UPDATE clientes
 		SET nome_cliente = pNomeCliente, cpf_cliente = pCpfCliente,
-        email_cliente = pEmailCliente, data_nascimento = pDataNasc
+        email_cliente = pEmailCliente, data_nasc = pDataNasc
 		WHERE id_cliente = pId_Cliente;
 	END$$
 DELIMITER ;
 
 DELIMITER $$
-	CREATE PROCEDURE atualizar_endereco(IN pId_Cliente INT, IN pCep CHAR(8), IN pNumero INT, IN pEstado VARCHAR(45), IN pCidade VARCHAR(45), IN pBairro VARCHAR(45), IN pLogradouro VARCHAR(45))
+	CREATE PROCEDURE atualizar_endereco(IN pId_Endereco INT, IN pCep CHAR(8), IN pNumero INT, IN pEstado VARCHAR(45), IN pCidade VARCHAR(45), IN pBairro VARCHAR(45), IN pLogradouro VARCHAR(45))
 	BEGIN
 		UPDATE enderecos
-		SET cep = pCep, numero = pNumero,
-        estado = pEstado, cidade = pCidade, 
-        bairro = pBairro, logradouro = pLogradouro
-		WHERE fk_id_cliente = pId_Cliente;
+		SET cep = pCep, numero = pNumero, estado = pEstado, cidade = pCidade, bairro = pBairro, logradouro = pLogradouro
+		WHERE id_endereco = pId_Endereco;
 	END$$
 DELIMITER ;
 
 DELIMITER $$
-	CREATE PROCEDURE atualizar_telefone(IN pId_Cliente INT, IN pTelefone char(11))
+	CREATE PROCEDURE atualizar_telefone(IN pId_Telefone INT, IN pNumero CHAR(11))
 	BEGIN
 		UPDATE telefones
-		SET telefone = pTelefone
-		WHERE fk_id_cliente = pId_Cliente;
+		SET telefone = pNumero
+		WHERE id_telefone = pId_Telefone;
 	END$$
-DELIMITER ;
-
-DELIMITER $$
-    CREATE PROCEDURE cadastrar_novo_cliente(IN pNomeCliente VARCHAR(100),
-    IN pCpfCliente CHAR(11),
-    IN pEmailCliente VARCHAR(100))
-    BEGIN
-        INSERT INTO clientes (nome_cliente, cpf_cliente, email_cliente)
-        VALUES (pNomeCliente, pCpfCliente, pEmailCliente);
-    END $$
 DELIMITER ;
 
 -- Cadastros de Pedidos
